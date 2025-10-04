@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: strategy-app
+    volumes:
+      - .:/app
+      - /app/.venv
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENV=development
+    command: python src/main.py
+    restart: unless-stopped
+
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: strategy-db
+  #   environment:
+  #     POSTGRES_USER: strategy
+  #     POSTGRES_PASSWORD: strategy123
+  #     POSTGRES_DB: strategy_db
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+# volumes:
+#   postgres_data:

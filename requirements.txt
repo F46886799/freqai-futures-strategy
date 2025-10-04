@@ -1,0 +1,22 @@
+# Core dependencies
+python-dotenv==1.0.0
+
+# Data processing
+pandas==2.1.0
+numpy==1.25.2
+
+# Web framework (uncomment if needed)
+# fastapi==0.103.0
+# uvicorn==0.23.2
+
+# Database (uncomment if needed)
+# sqlalchemy==2.0.20
+# psycopg2-binary==2.9.7
+
+# Testing
+pytest==7.4.2
+pytest-cov==4.1.0
+
+# Code quality
+black==23.9.1
+flake8==6.1.0
