@@ -14,7 +14,6 @@ services:
       - ENV=development
     command: python src/main.py
     restart: unless-stopped
-
   # postgres:
   #   image: postgres:15-alpine
   #   container_name: strategy-db
@@ -27,5 +26,5 @@ services:
   #   volumes:
   #     - postgres_data:/var/lib/postgresql/data
 
-# volumes:
-#   postgres_data:
+  # volumes:
+  #   postgres_data:
