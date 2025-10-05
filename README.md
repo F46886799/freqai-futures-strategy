@@ -1,6 +1,31 @@
+<div align="center">
+
 # 🤖 FreqAI Hybrid Futures Trading Strategy
 
-استراتژی پیشرفته معاملاتی با استفاده از **Freqtrade + FreqAI + LightGBM** برای ترید Futures با Leverage در صرافی Binance.
+[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
+[![Freqtrade](https://img.shields.io/badge/Freqtrade-2025.1-green.svg)](https://freqtrade.io)
+[![Docker](https://img.shields.io/badge/Docker-Required-blue.svg)](https://docker.com)
+[![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Testing-yellow.svg)](.)
+
+**استراتژی پیشرفته معاملاتی با Machine Learning برای Futures Trading**
+
+[فارسی](README.md) • [Documentation](MVP_DOCUMENTATION.md) • [Quick Start](QUICK_START.md)
+
+</div>
+
+---
+
+## 🎯 درباره پروژه
+
+این پروژه یک **استراتژی هوش مصنوعی** برای معاملات Futures با Leverage در صرافی Binance است که از **Freqtrade + FreqAI + LightGBM** استفاده می‌کند.
+
+### ✨ چه کاری انجام می‌دهد؟
+- 📊 **پیش‌بینی قیمت** با Machine Learning
+- ⚡ **معاملات دو طرفه** (LONG & SHORT)
+- 🎚️ **Leverage دینامیک** (2x تا 5x)
+- 🛡️ **مدیریت ریسک** با Isolated Margin
+- 🔄 **بروزرسانی خودکار** مدل هر 30 دقیقه
 
 ---
 
