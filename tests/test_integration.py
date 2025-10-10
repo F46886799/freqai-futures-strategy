@@ -154,7 +154,7 @@ class TestMonitoringSystem:
             script_path = monitoring_path / script
             
             # Try to compile the script
-            with open(script_path, 'r') as f:
+            with open(script_path, 'r', encoding='utf-8') as f:
                 code = f.read()
                 
             try:
