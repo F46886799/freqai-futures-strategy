@@ -7,10 +7,13 @@
 [![Docker](https://img.shields.io/badge/Docker-Required-blue.svg)](https://docker.com)
 [![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Testing-yellow.svg)](.)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-success.svg)](.github/workflows)
 
 **استراتژی پیشرفته معاملاتی با Machine Learning برای Futures Trading**
 
-[فارسی](README.md) • [Documentation](MVP_DOCUMENTATION.md) • [Quick Start](QUICK_START.md)
+**✨ با CI/CD کامل و قابل رصد**
+
+[فارسی](README.md) • [Documentation](MVP_DOCUMENTATION.md) • [Quick Start](QUICK_START.md) • [CI/CD Guide](CI_CD_GUIDE.md)
 
 </div>
 
@@ -95,21 +98,52 @@ docker run --rm \
 
 ---
 
-## 📁 ساختار پروژه
+## � CI/CD و Monitoring
+
+### Automated Workflows
+- ✅ **Code Quality**: Linting & formatting خودکار
+- ✅ **Unit Tests**: تست خودکار با هر commit
+- ✅ **Backtest**: اجرای خودکار backtest
+- ✅ **Performance Tracking**: ردیابی metrics در طول زمان
+
+### Monitoring System
+- 📊 **Metrics Extraction**: استخراج خودکار از نتایج
+- 📈 **HTML Reports**: گزارش‌های تعاملی فارسی
+- 📉 **Version Comparison**: مقایسه خودکار versions
+- 🏆 **Trend Analysis**: تحلیل روند performance
+
+**📖 راهنمای کامل:** [CI_CD_GUIDE.md](./CI_CD_GUIDE.md)
+
+---
+
+## �📁 ساختار پروژه
 
 ```
 strategy/
+├── .github/workflows/               # CI/CD workflows ⭐ جدید
+│   ├── 1-code-quality.yml
+│   ├── 2-unit-tests.yml
+│   ├── 3-backtest.yml
+│   └── 4-performance-tracking.yml
 ├── config/
-│   └── config.json                    # کانفیگ اصلی (Futures)
+│   └── config.json                  # کانفیگ اصلی (Futures)
+├── monitoring/                      # Monitoring system ⭐ جدید
+│   ├── extract_metrics.py
+│   ├── generate_report.py
+│   └── compare_versions.py
+├── tests/                           # Testing framework ⭐ جدید
+│   ├── test_strategy_logic.py
+│   └── test_integration.py
 ├── user_data/
 │   ├── strategies/
-│   │   └── FreqAIHybridStrategy.py   # استراتژی اصلی
-│   └── data/                          # داده‌ها (git ignore)
-├── docker-compose.yml                 # Docker setup
-├── MVP_DOCUMENTATION.md               # مستندات کامل فارسی
-├── QUICK_START.md                     # راهنمای سریع فارسی
-├── SETUP_GUIDE.md                     # راهنمای نصب تفصیلی
-└── README.md                          # این فایل
+│   │   └── FreqAIHybridStrategy.py # استراتژی اصلی
+│   └── data/                        # داده‌ها (git ignore)
+├── docker-compose.yml               # Docker setup
+├── CI_CD_GUIDE.md                  # راهنمای CI/CD ⭐ جدید
+├── MVP_DOCUMENTATION.md             # مستندات کامل فارسی
+├── QUICK_START.md                   # راهنمای سریع فارسی
+├── SETUP_GUIDE.md                   # راهنمای نصب تفصیلی
+└── README.md                        # این فایل
 ```
 
 ---
@@ -132,9 +166,11 @@ strategy/
 
 ## 📚 مستندات
 
+- **[CI_CD_GUIDE.md](./CI_CD_GUIDE.md)** - راهنمای کامل CI/CD ⭐ جدید
 - **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - راهنمای نصب کامل
 - **[MVP_DOCUMENTATION.md](./MVP_DOCUMENTATION.md)** - مستندات فنی
 - **[QUICK_START.md](./QUICK_START.md)** - شروع سریع
+- **[monitoring/README.md](./monitoring/README.md)** - راهنمای Monitoring ⭐ جدید
 - **[Freqtrade Docs](https://www.freqtrade.io/)** - مستندات رسمی
 
 ---
