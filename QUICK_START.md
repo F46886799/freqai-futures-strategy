@@ -18,7 +18,7 @@ docker --version
 docker-compose --version
 
 # بررسی فایل‌های پروژه
-cd C:\strategy
+cd c:\freqai-futures-strategy
 ls
 ```
 
@@ -36,7 +36,7 @@ ls
 docker pull freqtradeorg/freqtrade:stable_freqairl
 
 # ورود به container
-docker run -it --rm -v C:\strategy\user_data:/freqtrade/user_data freqtradeorg/freqtrade:stable_freqairl bash
+docker run -it --rm -v c:\freqai-futures-strategy\user_data:/freqtrade/user_data freqtradeorg/freqtrade:stable_freqairl bash
 
 # داخل container:
 freqtrade download-data \
@@ -59,15 +59,15 @@ exit
 ## 🧪 مرحله 3: Backtesting سریع (3-5 دقیقه)
 
 ```powershell
-docker run -it --rm \
-  -v C:\strategy\user_data:/freqtrade/user_data \
-  -v C:\strategy\config:/freqtrade/config \
-  freqtradeorg/freqtrade:stable_freqairl \
-  backtesting \
-  --strategy FreqAIHybridStrategy \
-  --strategy-path /freqtrade/user_data/strategies \
-  --config /freqtrade/config/config.json \
-  --freqaimodel LightGBMRegressorMultiTarget \
+docker run -it --rm `
+  -v c:\freqai-futures-strategy\user_data:/freqtrade/user_data `
+  -v c:\freqai-futures-strategy\config:/freqtrade/config `
+  freqtradeorg/freqtrade:stable_freqairl `
+  backtesting `
+  --strategy FreqAIHybridStrategy `
+  --strategy-path /freqtrade/user_data/strategies `
+  --config /freqtrade/config/config.json `
+  --freqaimodel LightGBMRegressorMultiTarget `
   --timerange 20240701-20250101
 ```
 

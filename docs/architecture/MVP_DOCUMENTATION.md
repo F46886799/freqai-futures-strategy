@@ -44,7 +44,7 @@
 ## 📁 ساختار پروژه
 
 ```
-C:\strategy\
+c:\freqai-futures-strategy\
 ├── freqtrade/                 # Freqtrade source code
 ├── user_data/
 │   ├── strategies/

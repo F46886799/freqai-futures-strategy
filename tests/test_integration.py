@@ -94,17 +94,33 @@ class TestFileStructure:
         
     def test_documentation_exists(self):
         """Test documentation files exist"""
-        docs = [
+        # Root documentation
+        root_docs = [
             'README.md',
-            'MVP_DOCUMENTATION.md',
-            'SETUP_GUIDE.md',
             'QUICK_START.md',
+            'ROADMAP.md',
         ]
+        
+        # Docs in docs/ directory
+        docs_structure = {
+            'docs/README.md': 'Documentation index',
+            'docs/setup/SETUP_GUIDE.md': 'Setup guide',
+            'docs/setup/ENVIRONMENT_SETUP.md': 'Environment setup',
+            'docs/architecture/MVP_DOCUMENTATION.md': 'MVP documentation',
+            'docs/architecture/UNIFIED_ARCHITECTURE.md': 'Unified architecture',
+            'docs/guides/FAQ.md': 'FAQ',
+            'docs/guides/GLOSSARY.md': 'Glossary',
+        }
         
         base_path = Path(__file__).parent.parent
         
-        for doc in docs:
-            assert (base_path / doc).exists(), f"Missing documentation: {doc}"
+        # Check root docs
+        for doc in root_docs:
+            assert (base_path / doc).exists(), f"Missing root documentation: {doc}"
+            
+        # Check docs/ structure
+        for doc_path, description in docs_structure.items():
+            assert (base_path / doc_path).exists(), f"Missing {description}: {doc_path}"
             
     def test_github_workflows_exist(self):
         """Test GitHub Actions workflows exist"""

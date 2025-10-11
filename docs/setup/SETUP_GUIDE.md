@@ -18,8 +18,8 @@
 ### مرحله 1: Clone کردن ریپوزیتوری
 
 ```bash
-git clone <YOUR_REPO_URL>
-cd strategy
+git clone https://github.com/aminak58/freqai-futures-strategy.git
+cd freqai-futures-strategy
 ```
 
 ### مرحله 2: Pull کردن Docker Image
@@ -37,7 +37,7 @@ docker pull freqtradeorg/freqtrade:stable_freqairl
 پس از clone، ساختار باید به این شکل باشد:
 
 ```
-strategy/
+freqai-futures-strategy/
 ├── config/
 │   └── config.json              # کانفیگ اصلی (Futures mode)
 ├── user_data/

@@ -32,18 +32,31 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
           
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install pytest pytest-cov pytest-asyncio pytest-mock
-        pip install pandas numpy
+        sudo apt-get update
+        sudo apt-get install -y build-essential wget
+        
+    - name: Install TA-Lib
+      run: |
+        wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+        tar -xzf ta-lib-0.4.0-src.tar.gz
+        cd ta-lib/
+        ./configure --prefix=/usr
+        make
+        sudo make install
+        cd ..
+        
+    - name: Install Freqtrade and dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools wheel
+        pip install freqtrade[freqai]
         pip install technical pandas-ta
-        if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
+        pip install -r requirements-dev.txt
         
     - name: Run unit tests with coverage
       run: |
         pytest tests/ -v --cov=user_data/strategies --cov-report=xml --cov-report=term-missing
-      continue-on-error: true
         
     - name: Upload coverage reports
       uses: codecov/codecov-action@v4
@@ -58,16 +71,27 @@ jobs:
       run: |
         python -c "
         import sys
+        import json
         sys.path.insert(0, 'user_data/strategies')
+        
+        # Load config
+        with open('config/config.json', 'r') as f:
+            config = json.load(f)
+        
         try:
             from FreqAIHybridStrategy import FreqAIHybridStrategy
             print('✅ Strategy import successful')
-            strategy = FreqAIHybridStrategy()
+            
+            # Initialize with config
+            strategy = FreqAIHybridStrategy(config)
             print(f'✅ Strategy initialized: {strategy.__class__.__name__}')
             print(f'✅ Timeframe: {strategy.timeframe}')
             print(f'✅ Can short: {strategy.can_short}')
+            print(f'✅ Stoploss: {strategy.stoploss}')
         except Exception as e:
             print(f'❌ Error: {e}')
+            import traceback
+            traceback.print_exc()
             sys.exit(1)
         "
         

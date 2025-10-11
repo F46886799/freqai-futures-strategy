@@ -3,7 +3,30 @@
 # 🤖 FreqAI Hybrid Futures Trading Strategy
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
-[![Freqtrade](https://img.shields.io/badge/Freqtrade-2025.1-green.svg)](https://freqtrade.io)
+[![Freqtrade](ht## 📚 مستندات
+
+### راهنماهای اصلی
+- 🚀 **[QUICK_START.md](./QUICK_START.md)** - شروع سریع (15 دقیقه)
+- 🗺️ **[ROADMAP.md](./ROADMAP.md)** - نقشه راه توسعه
+- 📚 **[docs/](./docs/)** - مستندات کامل
+
+### مستندات فنی
+- 🔧 **[راه‌اندازی محیط](./docs/setup/ENVIRONMENT_SETUP.md)** - نصب و پیکربندی
+- 📊 **[معماری MVP](./docs/architecture/MVP_DOCUMENTATION.md)** - معماری اولیه
+- 🏗️ **[معماری یکپارچه](./docs/architecture/UNIFIED_ARCHITECTURE.md)** - MVP + LSTM
+- 🧠 **[طراحی LSTM](./docs/architecture/LSTM_ARCHITECTURE_DESIGN.md)** - شبکه عصبی
+- 🚦 **[CI/CD](./docs/guides/CI_CD_GUIDE.md)** - راهنمای CI/CD
+
+### کمک‌های سریع
+- ❓ **[FAQ](./docs/guides/FAQ.md)** - سوالات متداول (31 سوال)
+- 📖 **[Glossary](./docs/guides/GLOSSARY.md)** - واژه‌نامه اصطلاحات (60+ اصطلاح)
+- 📝 **[Monitoring](./monitoring/README.md)** - راهنمای Monitoring
+- 🔍 **[وضعیت فعلی](./docs/guides/CURRENT_STATUS.md)** - پیشرفت پروژه
+
+### منابع خارجی
+- 📘 **[Freqtrade Docs](https://www.freqtrade.io/)** - مستندات رسمی Freqtrade
+- 🤖 **[FreqAI Docs](https://www.freqtrade.io/en/stable/freqai/)** - مستندات FreqAI
+- 💬 **[Discord](https://discord.gg/freqtrade)** - جامعه Freqtradeo/badge/Freqtrade-2025.1-green.svg)](https://freqtrade.io)
 [![Docker](https://img.shields.io/badge/Docker-Required-blue.svg)](https://docker.com)
 [![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Testing-yellow.svg)](.)
@@ -13,7 +36,7 @@
 
 **✨ با CI/CD کامل و قابل رصد**
 
-[فارسی](README.md) • [Documentation](MVP_DOCUMENTATION.md) • [Quick Start](QUICK_START.md) • [CI/CD Guide](CI_CD_GUIDE.md)
+[فارسی](README.md) • [Quick Start](QUICK_START.md) • [Roadmap](ROADMAP.md) • [Documentation](docs/) • [FAQ](docs/guides/FAQ.md)
 
 </div>
 
@@ -67,8 +90,8 @@
 
 ```bash
 # 1. Clone کردن
-git clone <YOUR_REPO_URL>
-cd strategy
+git clone https://github.com/aminak58/freqai-futures-strategy.git
+cd freqai-futures-strategy
 
 # 2. Pull کردن Docker Image (13.8 GB)
 docker pull freqtradeorg/freqtrade:stable_freqairl
@@ -166,12 +189,23 @@ strategy/
 
 ## 📚 مستندات
 
-- **[CI_CD_GUIDE.md](./CI_CD_GUIDE.md)** - راهنمای کامل CI/CD ⭐ جدید
-- **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - راهنمای نصب کامل
-- **[MVP_DOCUMENTATION.md](./MVP_DOCUMENTATION.md)** - مستندات فنی
-- **[QUICK_START.md](./QUICK_START.md)** - شروع سریع
-- **[monitoring/README.md](./monitoring/README.md)** - راهنمای Monitoring ⭐ جدید
-- **[Freqtrade Docs](https://www.freqtrade.io/)** - مستندات رسمی
+### راهنماها
+- 🚀 **[QUICK_START.md](./QUICK_START.md)** - شروع سریع (15 دقیقه)
+- 🔧 **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - راهنمای نصب کامل
+- 📊 **[MVP_DOCUMENTATION.md](./MVP_DOCUMENTATION.md)** - مستندات فنی معماری
+- 🏗️ **[UNIFIED_ARCHITECTURE.md](./UNIFIED_ARCHITECTURE.md)** - معماری یکپارچه MVP + LSTM
+- 🧠 **[LSTM_ARCHITECTURE_DESIGN.md](./LSTM_ARCHITECTURE_DESIGN.md)** - طراحی شبکه عصبی
+- 🚦 **[CI_CD_GUIDE.md](./CI_CD_GUIDE.md)** - راهنمای کامل CI/CD
+
+### کمک‌های سریع
+- ❓ **[FAQ.md](./FAQ.md)** - سوالات متداول ⭐ جدید
+- 📖 **[GLOSSARY.md](./GLOSSARY.md)** - واژه‌نامه اصطلاحات ⭐ جدید
+- 📝 **[monitoring/README.md](./monitoring/README.md)** - راهنمای Monitoring
+
+### منابع خارجی
+- 📘 **[Freqtrade Docs](https://www.freqtrade.io/)** - مستندات رسمی Freqtrade
+- 🤖 **[FreqAI Docs](https://www.freqtrade.io/en/stable/freqai/)** - مستندات FreqAI
+- 💬 **[Discord](https://discord.gg/freqtrade)** - جامعه Freqtrade
 
 ---
 

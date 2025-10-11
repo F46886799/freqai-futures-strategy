@@ -1,5 +1,13 @@
 # 🎯 معماری یکپارچه: MVP + LSTM با رژیم دیتکشن
 
+## 📍 وضعیت فعلی
+- ✅ **MVP Strategy**: کامل و عملیاتی (`FreqAIHybridStrategy.py`)
+- 🚧 **LSTM Network**: در حال توسعه (طراحی معماری کامل شده)
+- ✅ **Regime Detection**: عملیاتی در MVP و آماده استفاده در LSTM
+- 📋 **CI/CD Pipeline**: در حال طراحی
+
+---
+
 ## نمای کلی سیستم
 
 ```
