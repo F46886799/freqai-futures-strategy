@@ -124,6 +124,10 @@ class FreqAIHybridStrategy(IStrategy):
         dataframe['ema_50'] = ta.EMA(dataframe, timeperiod=50)
         dataframe['ema_200'] = ta.EMA(dataframe, timeperiod=200)
         
+        # Replace inf/nan with 0 for all columns
+        dataframe = dataframe.replace([np.inf, -np.inf], np.nan)
+        dataframe = dataframe.fillna(0)
+        
         return dataframe
     
     # ============ FreqAI Feature Engineering ============
@@ -154,8 +158,11 @@ class FreqAIHybridStrategy(IStrategy):
         dataframe[f"%-bb_lowerband-period"] = bollinger['lowerband']
         dataframe[f"%-bb_middleband-period"] = bollinger['middleband']
         dataframe[f"%-bb_upperband-period"] = bollinger['upperband']
-        dataframe[f"%-bb_width-period"] = (
-            (bollinger['upperband'] - bollinger['lowerband']) / bollinger['middleband']
+        # Handle division by zero
+        dataframe[f"%-bb_width-period"] = np.where(
+            bollinger['middleband'] != 0,
+            (bollinger['upperband'] - bollinger['lowerband']) / bollinger['middleband'],
+            0
         )
         
         # ATR for volatility
@@ -208,15 +215,30 @@ class FreqAIHybridStrategy(IStrategy):
         # Trend detection (EMA crossover based)
         ema_short = ta.EMA(dataframe, timeperiod=20)
         ema_long = ta.EMA(dataframe, timeperiod=50)
-        dataframe["%-trend_strength"] = (ema_short - ema_long) / ema_long
+        # Handle division by zero
+        dataframe["%-trend_strength"] = np.where(
+            ema_long != 0,
+            (ema_short - ema_long) / ema_long,
+            0
+        )
         
         # Volatility regime (ATR normalized)
         atr_20 = ta.ATR(dataframe, timeperiod=20)
-        dataframe["%-volatility_regime"] = atr_20 / dataframe["close"]
+        # Handle division by zero
+        dataframe["%-volatility_regime"] = np.where(
+            dataframe["close"] != 0,
+            atr_20 / dataframe["close"],
+            0
+        )
         
         # Volume regime
         volume_ma = dataframe["volume"].rolling(window=20).mean()
-        dataframe["%-volume_regime"] = dataframe["volume"] / volume_ma
+        # Handle division by zero
+        dataframe["%-volume_regime"] = np.where(
+            volume_ma != 0,
+            dataframe["volume"] / volume_ma,
+            1
+        )
         
         # Market regime classification
         # 0 = Range, 1 = Trending Up, 2 = Trending Down, 3 = High Volatility
@@ -244,33 +266,52 @@ class FreqAIHybridStrategy(IStrategy):
         We use multiple targets for ensemble predictions
         """
         # Target 1: Future price change (main target)
-        dataframe["&-s_close"] = (
+        future_close = (
             dataframe["close"]
             .shift(-self.freqai_info["feature_parameters"]["label_period_candles"])
             .rolling(self.freqai_info["feature_parameters"]["label_period_candles"])
             .mean()
-            / dataframe["close"]
-            - 1
+        )
+        # Handle division by zero
+        dataframe["&-s_close"] = np.where(
+            dataframe["close"] != 0,
+            (future_close / dataframe["close"]) - 1,
+            0
         )
         
         # Target 2: Future volatility (for risk management)
-        dataframe["&-s_volatility"] = (
+        future_volatility = (
             dataframe["close"]
             .shift(-self.freqai_info["feature_parameters"]["label_period_candles"])
             .rolling(self.freqai_info["feature_parameters"]["label_period_candles"])
             .std()
-            / dataframe["close"]
+        )
+        # Handle division by zero
+        dataframe["&-s_volatility"] = np.where(
+            dataframe["close"] != 0,
+            future_volatility / dataframe["close"],
+            0
         )
         
         # Target 3: Future volume surge (for confirmation)
-        dataframe["&-s_volume"] = (
+        future_volume = (
             dataframe["volume"]
             .shift(-self.freqai_info["feature_parameters"]["label_period_candles"])
             .rolling(self.freqai_info["feature_parameters"]["label_period_candles"])
             .mean()
-            / dataframe["volume"]
-            - 1
         )
+        # Handle division by zero
+        dataframe["&-s_volume"] = np.where(
+            dataframe["volume"] != 0,
+            (future_volume / dataframe["volume"]) - 1,
+            0
+        )
+        
+        # Clean up inf/nan in targets
+        dataframe = dataframe.replace([np.inf, -np.inf], np.nan)
+        dataframe["&-s_close"] = dataframe["&-s_close"].fillna(0)
+        dataframe["&-s_volatility"] = dataframe["&-s_volatility"].fillna(0)
+        dataframe["&-s_volume"] = dataframe["&-s_volume"].fillna(0)
         
         return dataframe
     
