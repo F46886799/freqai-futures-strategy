@@ -49,8 +49,9 @@ class BacktestConfig:
 class ColabBacktestExecutor:
     """Executes backtests on Colab GPU via SSH tunnel"""
     
-    def __init__(self, tunnel_url: str, ssh_key_path: Optional[str] = None):
+    def __init__(self, tunnel_url: str, password: Optional[str] = None, ssh_key_path: Optional[str] = None):
         self.tunnel_url = tunnel_url
+        self.password = password
         self.ssh_key_path = ssh_key_path
         self.client = None
         self.results_dir = Path("backtest_results")
@@ -77,11 +78,13 @@ class ColabBacktestExecutor:
                 )
             else:
                 # Use password authentication
+                if not self.password:
+                    raise ValueError("Password is required when not using SSH key")
                 self.client.connect(
                     hostname=host,
                     port=port,
                     username="root",
-                    password="",  # Colab default
+                    password=self.password,
                     timeout=30
                 )
             
@@ -250,7 +253,8 @@ def main():
     parser.add_argument("--strategy", default="FreqAIHybridStrategy", help="Strategy name")
     parser.add_argument("--timerange", required=True, help="Backtest timerange")
     parser.add_argument("--pairs", nargs="+", default=["BTC/USDT:USDT"], help="Trading pairs")
-    parser.add_argument("--ssh-key", help="SSH private key path")
+    parser.add_argument("--password", help="SSH password for authentication")
+    parser.add_argument("--ssh-key", help="SSH private key path (alternative to password)")
     
     args = parser.parse_args()
     
@@ -264,6 +268,7 @@ def main():
     # Execute
     executor = ColabBacktestExecutor(
         tunnel_url=args.tunnel_url,
+        password=args.password,
         ssh_key_path=args.ssh_key
     )
     
