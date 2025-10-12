@@ -1,4 +1,6 @@
-{
+import json
+
+notebook = {
   "nbformat": 4,
   "nbformat_minor": 0,
   "metadata": {
@@ -18,9 +20,7 @@
   "cells": [
     {
       "cell_type": "markdown",
-      "metadata": {
-        "id": "header"
-      },
+      "metadata": {"id": "header"},
       "source": [
         "# FreqAI GPU Backtest - Offline Mode\\n",
         "\\n",
@@ -34,10 +34,8 @@
     },
     {
       "cell_type": "code",
-      "metadata": {
-        "id": "config"
-      },
-      "execution_count": null,
+      "metadata": {"id": "config"},
+      "execution_count": None,
       "outputs": [],
       "source": [
         "# Configuration\\n",
@@ -52,19 +50,13 @@
     },
     {
       "cell_type": "markdown",
-      "metadata": {
-        "id": "gpu-header"
-      },
-      "source": [
-        "## GPU Verification"
-      ]
+      "metadata": {"id": "gpu-header"},
+      "source": ["## GPU Verification"]
     },
     {
       "cell_type": "code",
-      "metadata": {
-        "id": "gpu-check"
-      },
-      "execution_count": null,
+      "metadata": {"id": "gpu-check"},
+      "execution_count": None,
       "outputs": [],
       "source": [
         "import subprocess\\n",
@@ -85,19 +77,13 @@
     },
     {
       "cell_type": "markdown",
-      "metadata": {
-        "id": "mount-header"
-      },
-      "source": [
-        "## Mount Google Drive"
-      ]
+      "metadata": {"id": "mount-header"},
+      "source": ["## Mount Google Drive"]
     },
     {
       "cell_type": "code",
-      "metadata": {
-        "id": "mount-drive"
-      },
-      "execution_count": null,
+      "metadata": {"id": "mount-drive"},
+      "execution_count": None,
       "outputs": [],
       "source": [
         "from google.colab import drive\\n",
@@ -117,19 +103,13 @@
     },
     {
       "cell_type": "markdown",
-      "metadata": {
-        "id": "install-header"
-      },
-      "source": [
-        "## Install Dependencies"
-      ]
+      "metadata": {"id": "install-header"},
+      "source": ["## Install Dependencies"]
     },
     {
       "cell_type": "code",
-      "metadata": {
-        "id": "install-deps"
-      },
-      "execution_count": null,
+      "metadata": {"id": "install-deps"},
+      "execution_count": None,
       "outputs": [],
       "source": [
         "%%capture\\n",
@@ -139,19 +119,13 @@
     },
     {
       "cell_type": "markdown",
-      "metadata": {
-        "id": "clone-header"
-      },
-      "source": [
-        "## Clone Repository & Extract Data"
-      ]
+      "metadata": {"id": "clone-header"},
+      "source": ["## Clone Repository & Extract Data"]
     },
     {
       "cell_type": "code",
-      "metadata": {
-        "id": "clone-extract"
-      },
-      "execution_count": null,
+      "metadata": {"id": "clone-extract"},
+      "execution_count": None,
       "outputs": [],
       "source": [
         "import zipfile\\n",
@@ -178,19 +152,13 @@
     },
     {
       "cell_type": "markdown",
-      "metadata": {
-        "id": "backtest-header"
-      },
-      "source": [
-        "## Run GPU-Accelerated Backtest"
-      ]
+      "metadata": {"id": "backtest-header"},
+      "source": ["## Run GPU-Accelerated Backtest"]
     },
     {
       "cell_type": "code",
-      "metadata": {
-        "id": "run-backtest"
-      },
-      "execution_count": null,
+      "metadata": {"id": "run-backtest"},
+      "execution_count": None,
       "outputs": [],
       "source": [
         "import time\\n",
@@ -209,19 +177,13 @@
     },
     {
       "cell_type": "markdown",
-      "metadata": {
-        "id": "results-header"
-      },
-      "source": [
-        "## Display Results"
-      ]
+      "metadata": {"id": "results-header"},
+      "source": ["## Display Results"]
     },
     {
       "cell_type": "code",
-      "metadata": {
-        "id": "display-results"
-      },
-      "execution_count": null,
+      "metadata": {"id": "display-results"},
+      "execution_count": None,
       "outputs": [],
       "source": [
         "import json\\n",
@@ -253,19 +215,13 @@
     },
     {
       "cell_type": "markdown",
-      "metadata": {
-        "id": "download-header"
-      },
-      "source": [
-        "## Download Results"
-      ]
+      "metadata": {"id": "download-header"},
+      "source": ["## Download Results"]
     },
     {
       "cell_type": "code",
-      "metadata": {
-        "id": "download-results"
-      },
-      "execution_count": null,
+      "metadata": {"id": "download-results"},
+      "execution_count": None,
       "outputs": [],
       "source": [
         "from google.colab import files\\n",
@@ -280,3 +236,8 @@
     }
   ]
 }
+
+with open('FreqAI_GPU_Backtest_Offline.ipynb', 'w', encoding='utf-8') as f:
+    json.dump(notebook, f, indent=2)
+
+print('Notebook created successfully!')
