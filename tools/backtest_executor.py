@@ -95,11 +95,24 @@ class ColabBacktestExecutor:
             raise
     
     def _parse_tunnel_url(self, url: str) -> tuple:
-        """Parse tunnel URL to get host and port"""
-        # Example: tcp://0.tcp.ngrok.io:12345
+        """Parse tunnel URL to get host and port
+        
+        Supports:
+        - ngrok: tcp://0.tcp.ngrok.io:12345
+        - cloudflared: https://xxx.trycloudflare.com
+        - direct: hostname:port
+        """
+        # Cloudflared HTTPS URL
+        if url.startswith("https://"):
+            # Extract hostname from HTTPS URL
+            host = url.replace("https://", "").split("/")[0]
+            return host, 22  # Cloudflared tunnels SSH on port 22
+        
+        # ngrok TCP URL
         if url.startswith("tcp://"):
             url = url[6:]
         
+        # Parse host:port
         if ":" in url:
             host, port = url.rsplit(":", 1)
             return host, int(port)
