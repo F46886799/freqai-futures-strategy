@@ -44,8 +44,8 @@ jobs:
         run: |
           cat > kernel-metadata.json << 'EOF'
           {
-            "id": "${{ secrets.KAGGLE_USERNAME }}/freqai-backtest",
-            "title": "FreqAI Futures Strategy Backtest",
+            "id": "${{ secrets.KAGGLE_USERNAME }}/freqai-futures-strategy-backtest",
+            "title": "freqai-futures-strategy-backtest",
             "code_file": "kaggle_backtest.py",
             "language": "python",
             "kernel_type": "script",
@@ -165,10 +165,10 @@ jobs:
           sleep 10
           
           echo "📊 Checking kernel status..."
-          kaggle kernels status ${{ secrets.KAGGLE_USERNAME }}/freqai-backtest
+          kaggle kernels status ${{ secrets.KAGGLE_USERNAME }}/freqai-futures-strategy-backtest || echo "Status check failed (kernel may still be queued)"
           
           echo "✅ Kernel submitted! Check results at:"
-          echo "https://www.kaggle.com/code/${{ secrets.KAGGLE_USERNAME }}/freqai-backtest"
+          echo "https://www.kaggle.com/code/${{ secrets.KAGGLE_USERNAME }}/freqai-futures-strategy-backtest"
       
       - name: 📝 Create Summary
         if: always()
@@ -180,13 +180,13 @@ jobs:
           **🌿 Branch:** ${{ github.ref_name }}
           **💾 Commit:** ${{ github.sha }}
           
-          ### 📊 Parameters:
+          ###  📊 Parameters:
           - **Timerange:** ${{ github.event.inputs.timerange || '20250101-20251012' }}
           - **Pairs:** ${{ github.event.inputs.pairs || 'BTC/USDT:USDT ETH/USDT:USDT SOL/USDT:USDT' }}
           
           ### 🔗 Links:
-          - [📈 View Results on Kaggle](https://www.kaggle.com/code/${{ secrets.KAGGLE_USERNAME }}/freqai-backtest)
-          - [📜 Kernel Output](https://www.kaggle.com/code/${{ secrets.KAGGLE_USERNAME }}/freqai-backtest/output)
+          - [📈 View Results on Kaggle](https://www.kaggle.com/code/${{ secrets.KAGGLE_USERNAME }}/freqai-futures-strategy-backtest)
+          - [📜 Kernel Output](https://www.kaggle.com/code/${{ secrets.KAGGLE_USERNAME }}/freqai-futures-strategy-backtest/output)
           
           > ⚠️ Note: Kaggle kernels may take 5-10 minutes to start. Check the link above for real-time progress.
           EOF
