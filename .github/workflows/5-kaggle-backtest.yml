@@ -180,9 +180,9 @@ jobs:
           }
           EOFNB
           
-          # Replace placeholders with actual values
-          sed -i "s/TIMERANGE_PLACEHOLDER/$TIMERANGE/g" backtest.ipynb
-          sed -i "s/PAIRS_PLACEHOLDER/$PAIRS/g" backtest.ipynb
+          # Replace placeholders with actual values (use | as delimiter to avoid issues with /)
+          sed -i "s|TIMERANGE_PLACEHOLDER|$TIMERANGE|g" backtest.ipynb
+          sed -i "s|PAIRS_PLACEHOLDER|$PAIRS|g" backtest.ipynb
       
       - name: 🚀 Push to Kaggle (GPU ENABLED)
         run: |
