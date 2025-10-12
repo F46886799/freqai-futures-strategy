@@ -114,11 +114,12 @@ jobs:
                 "metadata": {},
                 "outputs": [],
                 "source": [
-                  "import os\n",
-                  "timerange = os.getenv('TIMERANGE', '20250101-20251012')\n",
-                  "pairs = os.getenv('PAIRS', 'BTC/USDT:USDT ETH/USDT:USDT SOL/USDT:USDT')\n",
-                  "print(f'⏰ Timerange: {timerange}')\n",
-                  "print(f'💱 Pairs: {pairs}')"
+                  "# ⚙️ Configuration\n",
+                  "TIMERANGE = 'TIMERANGE_PLACEHOLDER'\n",
+                  "PAIRS_STR = 'PAIRS_PLACEHOLDER'\n",
+                  "PAIRS = PAIRS_STR.split()\n",
+                  "print(f'⏰ Timerange: {TIMERANGE}')\n",
+                  "print(f'💱 Pairs: {PAIRS}')"
                 ]
               },
               {
@@ -127,13 +128,9 @@ jobs:
                 "metadata": {},
                 "outputs": [],
                 "source": [
-                  "!freqtrade download-data \\\n",
-                  "    --exchange binance \\\n",
-                  "    --pairs $PAIRS \\\n",
-                  "    --timeframes 5m 15m 1h \\\n",
-                  "    --days 365 \\\n",
-                  "    --trading-mode futures \\\n",
-                  "    --config config/config.json"
+                  "# 📥 Download Data\n",
+                  "pairs_arg = ' '.join(PAIRS)\n",
+                  "!freqtrade download-data --exchange binance --pairs {pairs_arg} --timeframes 5m 15m 1h --days 365 --trading-mode futures --config config/config.json"
                 ]
               },
               {
@@ -143,12 +140,7 @@ jobs:
                 "outputs": [],
                 "source": [
                   "# 🚀 GPU-ACCELERATED BACKTEST\n",
-                  "!freqtrade backtesting \\\n",
-                  "    --strategy FreqAIHybridStrategy \\\n",
-                  "    --config config/config.json \\\n",
-                  "    --freqaimodel LightGBMRegressorMultiTarget \\\n",
-                  "    --timerange $TIMERANGE \\\n",
-                  "    --export trades"
+                  "!freqtrade backtesting --strategy FreqAIHybridStrategy --config config/config.json --freqaimodel LightGBMRegressorMultiTarget --timerange {TIMERANGE} --export trades"
                 ]
               },
               {
@@ -187,6 +179,10 @@ jobs:
             "nbformat_minor": 4
           }
           EOFNB
+          
+          # Replace placeholders with actual values
+          sed -i "s/TIMERANGE_PLACEHOLDER/$TIMERANGE/g" backtest.ipynb
+          sed -i "s/PAIRS_PLACEHOLDER/$PAIRS/g" backtest.ipynb
       
       - name: 🚀 Push to Kaggle (GPU ENABLED)
         run: |
