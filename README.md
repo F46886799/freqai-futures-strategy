@@ -1,216 +1,262 @@
-<div align="center">
+# FreqAI Futures Strategy
 
-# 🤖 FreqAI Hybrid Futures Trading Strategy
+Professional machine learning-based trading strategy for Binance USDT-M Perpetual Futures using FreqAI + LightGBM.
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org)
-[![Freqtrade](ht## 📚 مستندات
+## Features
 
-### راهنماهای اصلی
-- 🚀 **[QUICK_START.md](./QUICK_START.md)** - شروع سریع (15 دقیقه)
-- 🗺️ **[ROADMAP.md](./ROADMAP.md)** - نقشه راه توسعه
-- 📚 **[docs/](./docs/)** - مستندات کامل
+- **ML-powered predictions**: LightGBM multi-target regression with GPU acceleration
+- **Market regime detection**: Trend, volatility, and volume analysis
+- **80+ technical indicators**: Multi-timeframe feature engineering
+- **Dynamic leverage**: Confidence-based position sizing
+- **Professional automation**: SSH tunneling for remote GPU execution
+- **Comprehensive testing**: 33% coverage → targeting 80%+
 
-### مستندات فنی
-- 🔧 **[راه‌اندازی محیط](./docs/setup/ENVIRONMENT_SETUP.md)** - نصب و پیکربندی
-- 📊 **[معماری MVP](./docs/architecture/MVP_DOCUMENTATION.md)** - معماری اولیه
-- 🏗️ **[معماری یکپارچه](./docs/architecture/UNIFIED_ARCHITECTURE.md)** - MVP + LSTM
-- 🧠 **[طراحی LSTM](./docs/architecture/LSTM_ARCHITECTURE_DESIGN.md)** - شبکه عصبی
-- 🚦 **[CI/CD](./docs/guides/CI_CD_GUIDE.md)** - راهنمای CI/CD
-
-### کمک‌های سریع
-- ❓ **[FAQ](./docs/guides/FAQ.md)** - سوالات متداول (31 سوال)
-- 📖 **[Glossary](./docs/guides/GLOSSARY.md)** - واژه‌نامه اصطلاحات (60+ اصطلاح)
-- 📝 **[Monitoring](./monitoring/README.md)** - راهنمای Monitoring
-- 🔍 **[وضعیت فعلی](./docs/guides/CURRENT_STATUS.md)** - پیشرفت پروژه
-
-### منابع خارجی
-- 📘 **[Freqtrade Docs](https://www.freqtrade.io/)** - مستندات رسمی Freqtrade
-- 🤖 **[FreqAI Docs](https://www.freqtrade.io/en/stable/freqai/)** - مستندات FreqAI
-- 💬 **[Discord](https://discord.gg/freqtrade)** - جامعه Freqtradeo/badge/Freqtrade-2025.1-green.svg)](https://freqtrade.io)
-[![Docker](https://img.shields.io/badge/Docker-Required-blue.svg)](https://docker.com)
-[![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Testing-yellow.svg)](.)
-[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-success.svg)](.github/workflows)
-
-**استراتژی پیشرفته معاملاتی با Machine Learning برای Futures Trading**
-
-**✨ با CI/CD کامل و قابل رصد**
-
-[فارسی](README.md) • [Quick Start](QUICK_START.md) • [Roadmap](ROADMAP.md) • [Documentation](docs/) • [FAQ](docs/guides/FAQ.md)
-
-</div>
-
----
-
-## 🎯 درباره پروژه
-
-این پروژه یک **استراتژی هوش مصنوعی** برای معاملات Futures با Leverage در صرافی Binance است که از **Freqtrade + FreqAI + LightGBM** استفاده می‌کند.
-
-### ✨ چه کاری انجام می‌دهد؟
-- 📊 **پیش‌بینی قیمت** با Machine Learning
-- ⚡ **معاملات دو طرفه** (LONG & SHORT)
-- 🎚️ **Leverage دینامیک** (2x تا 5x)
-- 🛡️ **مدیریت ریسک** با Isolated Margin
-- 🔄 **بروزرسانی خودکار** مدل هر 30 دقیقه
-
----
-
-## 📊 ویژگی‌های کلیدی
-
-### ⚡ Futures Trading با Leverage
-- **Trading Mode:** Futures (USDT-M Perpetual)
-- **Margin:** Isolated (مدیریت ریسک بهتر)
-- **Leverage:** Dynamic 2x-5x (بسته به شرایط بازار)
-- **Positions:** LONG & SHORT (دو طرفه)
-
-### 🧠 Machine Learning با FreqAI
-- **Model:** LightGBM Regressor (Multi-Target)
-- **Training:** Sliding Window 30 روزه
-- **Features:** 1,386 ویژگی از Multi-Timeframe (5m/15m/1h)
-- **Outlier Detection:** SVM برای حذف نویز
-- **Predictions:** سه هدف (price change, volatility, volume surge)
-
-### 📈 Hybrid Indicators
-- **Trend:** EMA, Supertrend, ADX
-- **Momentum:** RSI, MACD, Stochastic
-- **Volume:** OBV, MFI, Volume indicators
-- **Volatility:** ATR, Bollinger Bands
-- **Market Regime:** 4 رژیم (Trending Bull/Bear, High Vol, Sideways)
-
----
-
-## 🚀 نصب سریع
-
-### پیش‌نیازها
-- Docker Desktop
-- Git
-- VPN فعال (برای ایران)
-
-### مراحل نصب
-
-```bash
-# 1. Clone کردن
-git clone https://github.com/aminak58/freqai-futures-strategy.git
-cd freqai-futures-strategy
-
-# 2. Pull کردن Docker Image (13.8 GB)
-docker pull freqtradeorg/freqtrade:stable_freqairl
-
-# 3. دانلود داده
-docker run --rm -v ${PWD}/user_data:/freqtrade/user_data \
-  freqtradeorg/freqtrade:stable_freqairl download-data \
-  --exchange binance \
-  --pairs BTC/USDT:USDT ETH/USDT:USDT SOL/USDT:USDT \
-  --timeframes 5m 15m 1h \
-  --days 500 \
-  --trading-mode futures
-
-# 4. اجرای Backtest
-docker run --rm \
-  -v ${PWD}/user_data:/freqtrade/user_data \
-  -v ${PWD}/config:/freqtrade/config \
-  freqtradeorg/freqtrade:stable_freqairl backtesting \
-  --strategy FreqAIHybridStrategy \
-  --strategy-path /freqtrade/user_data/strategies \
-  --config /freqtrade/config/config.json \
-  --freqaimodel LightGBMRegressorMultiTarget \
-  --timerange 20241001-20250101
-```
-
-**📖 راهنمای کامل:** [SETUP_GUIDE.md](./SETUP_GUIDE.md)
-
----
-
-## � CI/CD و Monitoring
-
-### Automated Workflows
-- ✅ **Code Quality**: Linting & formatting خودکار
-- ✅ **Unit Tests**: تست خودکار با هر commit
-- ✅ **Backtest**: اجرای خودکار backtest
-- ✅ **Performance Tracking**: ردیابی metrics در طول زمان
-
-### Monitoring System
-- 📊 **Metrics Extraction**: استخراج خودکار از نتایج
-- 📈 **HTML Reports**: گزارش‌های تعاملی فارسی
-- 📉 **Version Comparison**: مقایسه خودکار versions
-- 🏆 **Trend Analysis**: تحلیل روند performance
-
-**📖 راهنمای کامل:** [CI_CD_GUIDE.md](./CI_CD_GUIDE.md)
-
----
-
-## �📁 ساختار پروژه
+## Project Structure
 
 ```
-strategy/
-├── .github/workflows/               # CI/CD workflows ⭐ جدید
-│   ├── 1-code-quality.yml
-│   ├── 2-unit-tests.yml
-│   ├── 3-backtest.yml
-│   └── 4-performance-tracking.yml
-├── config/
-│   └── config.json                  # کانفیگ اصلی (Futures)
-├── monitoring/                      # Monitoring system ⭐ جدید
-│   ├── extract_metrics.py
-│   ├── generate_report.py
-│   └── compare_versions.py
-├── tests/                           # Testing framework ⭐ جدید
-│   ├── test_strategy_logic.py
-│   └── test_integration.py
+freqai-futures-strategy/
+├── config/                  # Configuration files
+│   ├── config.json         # Freqtrade config
+│   └── tunnel_config.json  # SSH tunnel config
 ├── user_data/
-│   ├── strategies/
-│   │   └── FreqAIHybridStrategy.py # استراتژی اصلی
-│   └── data/                        # داده‌ها (git ignore)
-├── docker-compose.yml               # Docker setup
-├── CI_CD_GUIDE.md                  # راهنمای CI/CD ⭐ جدید
-├── MVP_DOCUMENTATION.md             # مستندات کامل فارسی
-├── QUICK_START.md                   # راهنمای سریع فارسی
-├── SETUP_GUIDE.md                   # راهنمای نصب تفصیلی
-└── README.md                        # این فایل
+│   └── strategies/
+│       └── FreqAIHybridStrategy.py  # Main strategy
+├── tools/                   # Automation tools
+│   ├── tunnel_manager.py   # SSH tunnel manager  
+│   └── backtest_executor.py # Remote backtest executor
+├── tests/                   # Test suite
+├── monitoring/              # Performance monitoring
+└── docs/                    # Documentation
+    ├── guides/             # Setup and usage guides
+    ├── architecture/       # Technical architecture
+    └── deprecated/         # Archived documentation
 ```
 
+## Quick Start
+
+### 1. Setup Environment
+
+```powershell
+# Create virtual environment
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
+
+### 2. Download Historical Data
+
+```powershell
+freqtrade download-data `
+  --exchange binance `
+  --pairs BTC/USDT:USDT ETH/USDT:USDT SOL/USDT:USDT `
+  --timeframes 5m 15m 1h `
+  --days 365 `
+  --trading-mode futures `
+  --config config/config.json
+```
+
+### 3. Run Tests
+
+```powershell
+pytest tests/ --cov=user_data/strategies --cov-report=term-missing
+```
+
+### 4. Local Backtest (CPU)
+
+```powershell
+freqtrade backtesting `
+  --strategy FreqAIHybridStrategy `
+  --config config/config.json `
+  --freqaimodel LightGBMRegressorMultiTarget `
+  --timerange 20250901-20251012 `
+  --export trades
+```
+
+## Professional GPU Automation
+
+### Why Tunneling?
+
+Manual notebook execution is:
+- ❌ Not scalable for multiple backtests
+- ❌ Error-prone (file mounting, Drive access)
+- ❌ Unprofessional and inefficient
+
+Our solution:
+- ✅ Automated SSH tunnel via ngrok/cloudflared
+- ✅ Structured command execution with monitoring
+- ✅ Automatic result synchronization
+- ✅ Batch execution support
+- ✅ Full logging and error handling
+
+### Setup Tunnel
+
+1. **Install ngrok**:
+```powershell
+# Download from https://ngrok.com/download
+# Extract to C:\Program Files\ngrok\
+# Add to PATH
+ngrok authtoken YOUR_AUTH_TOKEN
+```
+
+2. **Configure tunnel**:
+```json
+// config/tunnel_config.json
+{
+  "tunnel_type": "ngrok",
+  "local_port": 8888,
+  "auth_token": "YOUR_NGROK_TOKEN",
+  "region": "us"
+}
+```
+
+3. **Start tunnel**:
+```powershell
+python tools/tunnel_manager.py start
+# Output: ✅ Tunnel active: tcp://0.tcp.ngrok.io:12345
+```
+
+### Execute Remote Backtest
+
+**Single backtest**:
+```powershell
+python tools/backtest_executor.py `
+  --tunnel-url "tcp://0.tcp.ngrok.io:12345" `
+  --strategy FreqAIHybridStrategy `
+  --timerange 20250901-20251012 `
+  --pairs BTC/USDT:USDT
+```
+
+**Batch execution**:
+```python
+from tools.backtest_executor import ColabBacktestExecutor, BacktestConfig
+
+# Define backtest configurations
+configs = [
+    BacktestConfig(
+        strategy="FreqAIHybridStrategy",
+        timerange="20250901-20251012",
+        pairs=["BTC/USDT:USDT"]
+    ),
+    BacktestConfig(
+        strategy="FreqAIHybridStrategy",
+        timerange="20250801-20250831",
+        pairs=["ETH/USDT:USDT", "SOL/USDT:USDT"]
+    ),
+]
+
+# Execute all backtests
+executor = ColabBacktestExecutor(tunnel_url="tcp://0.tcp.ngrok.io:12345")
+executor.connect()
+results = executor.execute_batch(configs)
+executor.disconnect()
+
+# Results automatically saved to backtest_results/
+```
+
+### Monitoring
+
+All executions are logged with:
+- Real-time progress updates
+- Execution time tracking
+- Automatic result download
+- Error handling and recovery
+- JSON result files with timestamps
+
+```powershell
+# View tunnel status
+python tools/tunnel_manager.py status
+
+# Stop tunnel
+python tools/tunnel_manager.py stop
+```
+
+## Strategy Details
+
+**FreqAIHybridStrategy** features:
+- **Market Regime Detection**: Trend/volatility/volume classification
+- **ML Predictions**: LightGBM multi-target (ROI, stop-loss, position size)
+- **Technical Indicators**: RSI, MACD, Bollinger Bands, ATR, Fibonacci, Volume
+- **Multi-timeframe**: 5m (primary) + 15m + 1h analysis
+- **Risk Management**: Dynamic leverage, adaptive stop-loss, confidence filtering
+
+## Development
+
+### Testing
+
+```powershell
+# Run all tests
+pytest tests/
+
+# With coverage report
+pytest tests/ --cov=user_data/strategies --cov-report=html
+
+# View coverage: htmlcov/index.html
+```
+
+### CI/CD
+
+GitHub Actions workflows:
+- `1-tests.yml`: Run test suite on every push
+- `2-docker.yml`: Build and push Docker images
+- `3-strategy-validation.yml`: Validate strategy logic
+
+### Monitoring
+
+```powershell
+cd monitoring
+python compare_versions.py  # Compare strategy versions
+python generate_report.py   # Generate performance report
+```
+
+## Documentation
+
+- **Setup Guide**: `docs/guides/SETUP_GUIDE.md`
+- **Architecture**: `docs/architecture/UNIFIED_ARCHITECTURE.md`
+- **Glossary**: `docs/guides/GLOSSARY.md`
+- **FAQ**: `docs/guides/FAQ.md`
+
+## Current Status
+
+- ✅ Strategy implemented with FreqAI
+- ✅ Inf/nan bugs fixed
+- ✅ CI/CD pipelines working
+- ✅ Professional SSH tunneling system
+- ✅ Automated backtest executor
+- 🔄 Test coverage: 33% → Target: 80%+
+- 📋 Phase 2: LSTM implementation
+
+## Technology Stack
+
+- **Trading**: Freqtrade 2025.9.1
+- **ML**: LightGBM with GPU support
+- **Automation**: ngrok/cloudflared tunneling
+- **Testing**: pytest + coverage
+- **CI/CD**: GitHub Actions
+- **Monitoring**: Custom analytics tools
+
+## Requirements
+
+- Python 3.11+
+- Freqtrade 2025.9.1
+- TA-Lib
+- LightGBM
+- ngrok (for remote execution)
+- Docker (optional)
+
+## License
+
+MIT License
+
+## Support
+
+For issues:
+1. Check `docs/guides/FAQ.md`
+2. Review GitHub Issues
+3. Create new issue with details
+
 ---
 
-## ⚠️ هشدارها
-
-### 🚨 قبل از Live Trading:
-1. ✅ حداقل 3 ماه backtest موفق
-2. ✅ 2 هفته Dry Run بدون مشکل
-3. ✅ شروع با leverage پایین (2x)
-4. ✅ شروع با سرمایه کم (50-100 USDT)
-5. ✅ استفاده از isolated margin
-
-### 🔒 امنیت:
-- ❌ هرگز API Key را commit نکنید
-- ✅ از `.gitignore` استفاده کنید
-- ✅ Whitelist IP در Binance
-
----
-
-## 📚 مستندات
-
-### راهنماها
-- 🚀 **[QUICK_START.md](./QUICK_START.md)** - شروع سریع (15 دقیقه)
-- 🔧 **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - راهنمای نصب کامل
-- 📊 **[MVP_DOCUMENTATION.md](./MVP_DOCUMENTATION.md)** - مستندات فنی معماری
-- 🏗️ **[UNIFIED_ARCHITECTURE.md](./UNIFIED_ARCHITECTURE.md)** - معماری یکپارچه MVP + LSTM
-- 🧠 **[LSTM_ARCHITECTURE_DESIGN.md](./LSTM_ARCHITECTURE_DESIGN.md)** - طراحی شبکه عصبی
-- 🚦 **[CI_CD_GUIDE.md](./CI_CD_GUIDE.md)** - راهنمای کامل CI/CD
-
-### کمک‌های سریع
-- ❓ **[FAQ.md](./FAQ.md)** - سوالات متداول ⭐ جدید
-- 📖 **[GLOSSARY.md](./GLOSSARY.md)** - واژه‌نامه اصطلاحات ⭐ جدید
-- 📝 **[monitoring/README.md](./monitoring/README.md)** - راهنمای Monitoring
-
-### منابع خارجی
-- 📘 **[Freqtrade Docs](https://www.freqtrade.io/)** - مستندات رسمی Freqtrade
-- 🤖 **[FreqAI Docs](https://www.freqtrade.io/en/stable/freqai/)** - مستندات FreqAI
-- 💬 **[Discord](https://discord.gg/freqtrade)** - جامعه Freqtrade
-
----
-
-## ⚖️ Disclaimer
-
-**هشدار:** استفاده از این استراتژی به معنای پذیرش ریسک‌های مالی است. این نرم‌افزار "همان‌طور که هست" ارائه می‌شود بدون هیچ‌گونه ضمانت. لطفاً با مقادیر کم شروع کنید و ریسک را مدیریت کنید.
-
-**موفق باشید! 🚀**
+**Built with professional standards. No amateur solutions.**

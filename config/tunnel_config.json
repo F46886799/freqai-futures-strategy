@@ -1,0 +1,8 @@
+{
+    "tunnel_type": "ngrok",
+    "local_port": 8888,
+    "remote_port": 22,
+    "auth_token": "",
+    "region": "us",
+    "protocol": "tcp"
+}
