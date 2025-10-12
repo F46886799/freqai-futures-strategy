@@ -72,12 +72,22 @@ jobs:
           from datetime import datetime
           
           print("=" * 60)
-          print("🚀 FreqAI Backtest on Kaggle GPU")
+          print("🚀 FreqAI Backtest on Kaggle")
           print("=" * 60)
           
-          # Check GPU
-          print("\n📊 GPU Info:")
-          subprocess.run(["nvidia-smi"], check=False)
+          # Check GPU availability
+          print("\n📊 Checking GPU...")
+          try:
+              result = subprocess.run(["nvidia-smi"], capture_output=True, text=True, check=False)
+              if result.returncode == 0:
+                  print("✅ GPU Available!")
+                  print(result.stdout[:500])  # First 500 chars
+              else:
+                  print("⚠️ GPU command failed, using CPU")
+          except FileNotFoundError:
+              print("⚠️ nvidia-smi not found - Running on CPU")
+          except Exception as e:
+              print(f"⚠️ GPU check failed: {e} - Running on CPU")
           
           # Install dependencies
           print("\n📦 Installing dependencies...")
