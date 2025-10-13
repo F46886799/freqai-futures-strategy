@@ -1,0 +1,110 @@
+# Governance policy for self-governing trading agent (template)
+# Tune thresholds to your risk tolerance; values below are conservative defaults
+
+version: 1
+
+risk:
+  per_trade:
+    max_leverage: 2                      # absolute leverage cap per position
+    max_risk_fraction: 0.005             # fraction of equity at risk per trade (e.g., 0.5%)
+    max_position_size_fraction: 0.20     # cap position notional to 20% of equity
+    slippage_bps: 5                      # assume 5 bps slippage for planning
+    fee_bps: 6                           # round-trip fee assumption for safety tests
+    stop:
+      mode: atr_pct                      # dynamic stop policy reference (doc-only)
+      atr_multiplier: 2.0                # used for planning; strategy may compute internally
+      min_stop_pct: 0.015                # hard floor on stop (1.5%)
+      max_stop_pct: 0.05                 # hard ceiling on stop (5%)
+
+  portfolio:
+    max_open_trades: 3                   # align with config.json
+    max_gross_exposure_fraction: 0.80    # total gross exposure <= 80% equity
+    max_net_exposure_fraction: 0.50      # directional bias cap (|long-short|)
+    max_daily_loss_pct: 2.0              # daily loss circuit-breaker
+    max_drawdown_pct: 10.0               # peak-to-trough hard stop for the book
+    var_95_pct_cap: 3.0                  # optional: 1-day VaR cap as % of equity (planning)
+
+  trading_halts:
+    volatility_gate:
+      enabled: true
+      hv_lookback_days: 14               # realized vol lookback (days)
+      hv_percentile_block: 98            # if realized vol above this percentile, halt new entries
+      resume_percentile: 95              # hysteresis to resume entries
+    spread_slippage_gate:
+      enabled: true
+      max_spread_bps: 10                 # block if current spread exceeds this
+      max_slippage_bps: 15               # block if estimated slippage exceeds this
+
+state_engine:
+  regime_engine: regime_quantile         # one of: [regime_quantile, hmm]
+  hmm:
+    n_states_range: [3, 5]
+    update_hours: 6
+  quantile_calibration:
+    window_bars: 2000
+    quantiles: [0.2, 0.8]
+    update_hours: 6
+  ood_gate:
+    z_threshold: 3.0                     # block signals if features are >3 std from training
+
+evaluation:
+  metrics_source:
+    latest_json: monitoring/latest_metrics.json
+    history_csv: monitoring/metrics_history.csv
+  windows:
+    short_days: 7
+    mid_days: 30
+    long_days: 90
+  fees_slippage_overrides:
+    apply_safety_margin: true            # inflate costs when evaluating live performance
+    fee_multiplier: 1.2
+    slippage_multiplier: 1.5
+
+retraining:
+  cadence:
+    time_based_hours: 12                 # base periodic retraining cadence
+    min_hours_between_retrains: 6        # cool-down to avoid thrashing
+  performance_triggers:
+    pf_min_short: 1.05                   # Profit factor min over short window
+    sharpe_min_short: 0.5
+    winrate_drop_pp: 10                  # win-rate drop vs rolling mid-term (percentage points)
+    mdd_spike_factor: 1.5                # new MDD exceeds 1.5x median of last N windows
+  drift_triggers:
+    feature_drift:
+      psi_warn: 0.2                      # Population Stability Index thresholds
+      psi_retrain: 0.3
+    residual_drift:
+      adwin_delta: 0.002                 # ADWIN sensitivity for concept drift on residuals
+  actions:
+    warn_only_thresholds:                # crossing any of these raises warning, not halt
+      - pf_min_short
+      - sharpe_min_short
+    degrade_then_retrain:                # crossing these -> halve risk, schedule retrain
+      - winrate_drop_pp
+      - feature_drift.psi_retrain
+    halt_and_retrain:                    # immediate pause new entries + retrain
+      - mdd_spike_factor
+  resume_conditions:
+    require_back_to_baseline: true       # resume only if metrics recover above mins
+    min_hours_after_retrain: 2
+
+risk_degradation:
+  on_warn:
+    position_size_multiplier: 0.75
+    disable_shorts: false
+  on_degrade:
+    position_size_multiplier: 0.5
+    disable_shorts: true
+    tighten_stops_factor: 1.25           # multiply ATR stop by this (tighter)
+
+logging:
+  level: INFO
+  decisions_log: monitoring/governance_decisions.jsonl
+  keep_days: 30
+
+notes: |
+  This file is a governance template. It is not read by the bot yet.
+  Implementation plan: a monitoring decider will read metrics, compute drift,
+  and decide warnings, risk-degradation, halts, and (re)training schedules.
+  All thresholds should be validated with walk-forward evaluation and aligned
+  with exchange fees, latency, and your operational constraints.
