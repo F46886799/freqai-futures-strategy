@@ -1,82 +1,107 @@
-# 📚 مستندات پروژه FreqAI Futures Strategy
+# 📚 FreqAI Futures Strategy - Documentation Hub
 
-این پوشه شامل تمام مستندات فنی و راهنماهای پروژه است.
+**Last Updated:** October 13, 2025  
+**Status:** Production-Ready with Governance Layer
+
+This folder contains all technical documentation, guides, and architecture documents for the FreqAI Futures Strategy project.
 
 ---
 
-## 📂 ساختار مستندات
-
-### 🚀 Setup & Installation
-پوشه: [`setup/`](./setup/)
-
-- **[SETUP_GUIDE.md](./setup/SETUP_GUIDE.md)** - راهنمای نصب کامل
-- **[ENVIRONMENT_SETUP.md](./setup/ENVIRONMENT_SETUP.md)** - راه‌اندازی محیط توسعه
-- **[ENVIRONMENT_SETUP_COMPLETE.md](./setup/ENVIRONMENT_SETUP_COMPLETE.md)** - گزارش نصب موفق
+## 📂 Documentation Structure
 
 ### 🏗️ Architecture & Design
-پوشه: [`architecture/`](./architecture/)
+**Folder:** [`architecture/`](./architecture/)
 
-- **[MVP_DOCUMENTATION.md](./architecture/MVP_DOCUMENTATION.md)** - مستندات MVP
-- **[UNIFIED_ARCHITECTURE.md](./architecture/UNIFIED_ARCHITECTURE.md)** - معماری یکپارچه
-- **[LSTM_ARCHITECTURE_DESIGN.md](./architecture/LSTM_ARCHITECTURE_DESIGN.md)** - طراحی LSTM
-- **[REGIME_DETECTION_ALIGNMENT.md](./architecture/REGIME_DETECTION_ALIGNMENT.md)** - تشخیص رژیم بازار
+Technical architecture documents and design decisions.
 
-### 📖 Guides & References
-پوشه: [`guides/`](./guides/)
+- **[UNIFIED_ARCHITECTURE.md](./architecture/UNIFIED_ARCHITECTURE.md)** - Complete system architecture
+- **[LSTM_ARCHITECTURE_DESIGN.md](./architecture/LSTM_ARCHITECTURE_DESIGN.md)** - LSTM design considerations
+- **[REGIME_DETECTION_ALIGNMENT.md](./architecture/REGIME_DETECTION_ALIGNMENT.md)** - Regime detection design
+- **[MVP_DOCUMENTATION.md](./architecture/MVP_DOCUMENTATION.md)** - MVP scope and features
 
-- **[DEVELOPMENT_GUIDE.md](./guides/DEVELOPMENT_GUIDE.md)** - راهنمای توسعه
-- **[CI_CD_GUIDE.md](./guides/CI_CD_GUIDE.md)** - راهنمای CI/CD
-- **[FAQ.md](./guides/FAQ.md)** - سوالات متداول (31 سوال)
-- **[GLOSSARY.md](./guides/GLOSSARY.md)** - واژه‌نامه (60+ اصطلاح)
-- **[CURRENT_STATUS.md](./guides/CURRENT_STATUS.md)** - وضعیت فعلی پروژه
+### 📖 Development Guides
+**Folder:** [`guides/`](./guides/)
 
-### 🗄️ Archive
-پوشه: [`archive/`](./archive/)
+Practical guides for development, testing, and deployment.
 
-فایل‌های موقت، قدیمی، یا مربوط به مراحل قبلی
+- **[SETUP_GUIDE.md](./guides/SETUP_GUIDE.md)** - Complete setup instructions
+- **[DEVELOPMENT_GUIDE.md](./guides/DEVELOPMENT_GUIDE.md)** - Development workflow
+- **[CI_CD_GUIDE.md](./guides/CI_CD_GUIDE.md)** - CI/CD pipeline documentation
+- **[CURRENT_STATUS.md](./guides/CURRENT_STATUS.md)** - Project status tracker
+- **[AUTOMATION.md](./guides/AUTOMATION.md)** - Automation tools and workflows
+- **[FAQ.md](./guides/FAQ.md)** - Frequently asked questions
+- **[GLOSSARY.md](./guides/GLOSSARY.md)** - Technical terms and definitions
 
----
+### 📝 Development Sessions
+**Folder:** [`sessions/`](./sessions/)
 
-## 🔗 لینک‌های سریع
+Session notes documenting development progress and decisions.
 
-### در Root پروژه:
-- **[README.md](../README.md)** - معرفی اصلی پروژه
-- **[QUICK_START.md](../QUICK_START.md)** - شروع سریع 15 دقیقه‌ای
-- **[ROADMAP.md](../ROADMAP.md)** - نقشه راه توسعه
+- Session summaries and technical discussions
+- Problem-solving approaches
+- Architecture evolution
 
-### مستندات کاربردی:
-- [نصب و راه‌اندازی](./setup/SETUP_GUIDE.md)
-- [معماری سیستم](./architecture/UNIFIED_ARCHITECTURE.md)
-- [راهنمای توسعه](./guides/DEVELOPMENT_GUIDE.md)
-- [سوالات متداول](./guides/FAQ.md)
-- [واژه‌نامه](./guides/GLOSSARY.md)
+### 🗄️ Deprecated & Archive
+**Folder:** [`deprecated/`](./deprecated/)
 
----
+Archived documentation from previous phases.
 
-## 📋 چک‌لیست برای شروع
-
-برای شروع کار با پروژه، این مستندات را به ترتیب مطالعه کنید:
-
-1. ✅ **[README.md](../README.md)** - نمای کلی پروژه
-2. ✅ **[QUICK_START.md](../QUICK_START.md)** - راه‌اندازی سریع
-3. ✅ **[SETUP_GUIDE.md](./setup/SETUP_GUIDE.md)** - نصب کامل
-4. ✅ **[DEVELOPMENT_GUIDE.md](./guides/DEVELOPMENT_GUIDE.md)** - شروع توسعه
-5. ✅ **[UNIFIED_ARCHITECTURE.md](./architecture/UNIFIED_ARCHITECTURE.md)** - درک معماری
+- **[ROADMAP.md](./deprecated/ROADMAP.md)** - Original development roadmap (being updated)
+- Obsolete guides and references
 
 ---
 
-## 🔍 جستجوی سریع
+## 🔗 Quick Links
 
-### چطور ...؟
-- **محیط توسعه را راه‌اندازی کنم؟** → [ENVIRONMENT_SETUP.md](./setup/ENVIRONMENT_SETUP.md)
-- **تست بنویسم؟** → [DEVELOPMENT_GUIDE.md](./guides/DEVELOPMENT_GUIDE.md#testing)
-- **LSTM را implement کنم؟** → [LSTM_ARCHITECTURE_DESIGN.md](./architecture/LSTM_ARCHITECTURE_DESIGN.md)
-- **CI/CD را راه‌اندازی کنم؟** → [CI_CD_GUIDE.md](./guides/CI_CD_GUIDE.md)
+### Root Documentation
+- **[README.md](../README.md)** - Main project overview
+- **[GOVERNANCE_INTEGRATION_SUMMARY.md](../GOVERNANCE_INTEGRATION_SUMMARY.md)** - Complete governance spec
+- **[GOVERNANCE_QUICKSTART.md](../GOVERNANCE_QUICKSTART.md)** - Governance quick start
+- **[PROJECT_STATE.md](../PROJECT_STATE.md)** - Complete project state documentation
+- **[SCRUM_FRAMEWORK.md](../SCRUM_FRAMEWORK.md)** - Agile/Scrum framework for RL development
 
-### چیست؟
-- **FreqAI چیست؟** → [GLOSSARY.md](./guides/GLOSSARY.md#freqai)
-- **Regime Detection چیست؟** → [REGIME_DETECTION_ALIGNMENT.md](./architecture/REGIME_DETECTION_ALIGNMENT.md)
-- **اصطلاحات فنی** → [GLOSSARY.md](./guides/GLOSSARY.md)
+### Monitoring & Governance
+- **[monitoring/GOVERNANCE_SPEC.md](../monitoring/GOVERNANCE_SPEC.md)** - Governance technical design
+- **[monitoring/README.md](../monitoring/README.md)** - Monitoring tools guide
+
+### Essential Guides
+- [Setup & Installation](./guides/SETUP_GUIDE.md)
+- [Development Workflow](./guides/DEVELOPMENT_GUIDE.md)
+- [CI/CD Pipeline](./guides/CI_CD_GUIDE.md)
+- [System Architecture](./architecture/UNIFIED_ARCHITECTURE.md)
+
+---
+
+## 📋 Getting Started Checklist
+
+For new developers/users, read these documents in order:
+
+1. ✅ **[README.md](../README.md)** - Project overview
+2. ✅ **[PROJECT_STATE.md](../PROJECT_STATE.md)** - Current state and architecture
+3. ✅ **[SETUP_GUIDE.md](./guides/SETUP_GUIDE.md)** - Environment setup
+4. ✅ **[DEVELOPMENT_GUIDE.md](./guides/DEVELOPMENT_GUIDE.md)** - Development workflow
+5. ✅ **[GOVERNANCE_QUICKSTART.md](../GOVERNANCE_QUICKSTART.md)** - Governance system
+6. ✅ **[UNIFIED_ARCHITECTURE.md](./architecture/UNIFIED_ARCHITECTURE.md)** - System architecture
+7. ✅ **[SCRUM_FRAMEWORK.md](../SCRUM_FRAMEWORK.md)** - Development process
+
+---
+
+## 🔍 Quick Reference
+
+### How to...?
+- **Setup development environment?** → [SETUP_GUIDE.md](./guides/SETUP_GUIDE.md)
+- **Run backtests?** → [README.md](../README.md#quick-start)
+- **Use governance system?** → [GOVERNANCE_QUICKSTART.md](../GOVERNANCE_QUICKSTART.md)
+- **Write tests?** → [DEVELOPMENT_GUIDE.md](./guides/DEVELOPMENT_GUIDE.md)
+- **Understand CI/CD?** → [CI_CD_GUIDE.md](./guides/CI_CD_GUIDE.md)
+- **Contribute to RL development?** → [SCRUM_FRAMEWORK.md](../SCRUM_FRAMEWORK.md)
+
+### What is...?
+- **FreqAI?** → [GLOSSARY.md](./guides/GLOSSARY.md)
+- **Governance system?** → [GOVERNANCE_SPEC.md](../monitoring/GOVERNANCE_SPEC.md)
+- **PSI/ADWIN drift detection?** → [GOVERNANCE_INTEGRATION_SUMMARY.md](../GOVERNANCE_INTEGRATION_SUMMARY.md)
+- **Regime detection?** → [REGIME_DETECTION_ALIGNMENT.md](./architecture/REGIME_DETECTION_ALIGNMENT.md)
+- **Technical terms?** → [GLOSSARY.md](./guides/GLOSSARY.md)
 
 ---
 

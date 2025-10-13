@@ -1,0 +1,2 @@
+{"timestamp": "2025-10-13T15:46:03.303306Z", "status": "none", "reason": ["ok"], "actions": {}}
+{"timestamp": "2025-10-13T15:50:41.464894Z", "status": "warn", "reason": ["pf_min_short", "sharpe_min_short"], "actions": {"risk_multiplier": 0.75, "tighten_stop_factor": 1.0, "disable_shorts": false}}

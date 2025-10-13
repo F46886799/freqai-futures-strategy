@@ -25,6 +25,22 @@ from freqtrade.strategy import (
 import talib.abstract as ta
 import pandas_ta as pta
 from technical import qtpylib
+import logging
+logger = logging.getLogger(__name__)
+try:
+    # Lightweight runtime hook to read governance decisions/policy
+    from monitoring.governance_runtime import get_governance_state
+except Exception:  # pragma: no cover - strategy must not break if optional module fails
+    def get_governance_state(*args, **kwargs):
+        class _S:
+            status = "none"
+            risk_multiplier = 1.0
+            tighten_stop_factor = 1.0
+            disable_shorts = False
+            max_leverage = None
+            min_stop_pct = None
+            max_stop_pct = None
+        return _S()
 
 
 class FreqAIHybridStrategy(IStrategy):
@@ -53,10 +69,11 @@ class FreqAIHybridStrategy(IStrategy):
     
     # ROI table - Dynamic based on predictions
     minimal_roi = {
-        "0": 0.10,
-        "10": 0.05,
-        "30": 0.02,
-        "60": 0.01,
+        # Faster partial take-profits to bank gains sooner
+        "0": 0.02,    # 2%
+        "15": 0.01,   # 1% after 15m
+        "45": 0.005,  # 0.5% after 45m
+        "120": 0.0,   # breakeven after 2h
     }
     
     # Stoploss
@@ -67,10 +84,18 @@ class FreqAIHybridStrategy(IStrategy):
     trailing_stop_positive = 0.01
     trailing_stop_positive_offset = 0.02
     trailing_only_offset_is_reached = True
+    use_custom_stoploss = True
     
     # Hyperopt parameters
-    buy_di_threshold = DecimalParameter(0.0, 1.0, default=0.5, space='buy', optimize=True)
-    sell_di_threshold = DecimalParameter(0.0, 1.0, default=0.5, space='sell', optimize=True)
+    buy_di_threshold = DecimalParameter(0.0, 1.0, default=1.0, space='buy', optimize=True)
+    sell_di_threshold = DecimalParameter(0.0, 1.0, default=1.0, space='sell', optimize=True)
+    # Entry gating params
+    z_base_thr = DecimalParameter(0.0, 1.5, default=0.3, space='buy', optimize=True)
+    z_hv_thr = DecimalParameter(0.5, 2.0, default=0.8, space='buy', optimize=True)
+    vol_min = DecimalParameter(0.5, 1.5, default=0.7, space='buy', optimize=True)
+    vol_max = DecimalParameter(1.5, 5.0, default=4.0, space='buy', optimize=True)
+    # Toggle for entry audit logs
+    entry_audit_logs: bool = False
     
     # Market regime thresholds
     trend_threshold = DecimalParameter(0.001, 0.01, default=0.005, space='buy', optimize=True)
@@ -123,10 +148,31 @@ class FreqAIHybridStrategy(IStrategy):
         # Add some basic indicators for strategy logic (not for FreqAI)
         dataframe['ema_50'] = ta.EMA(dataframe, timeperiod=50)
         dataframe['ema_200'] = ta.EMA(dataframe, timeperiod=200)
+        dataframe['atr_14'] = ta.ATR(dataframe, timeperiod=14)
         
         # Replace inf/nan with 0 for all columns
         dataframe = dataframe.replace([np.inf, -np.inf], np.nan)
         dataframe = dataframe.fillna(0)
+
+        # Lightweight debug to understand why no trades are produced
+        try:
+            if metadata.get('pair') and metadata.get('timeframe') == self.timeframe:
+                # Only log for the first pair to avoid excessive logs
+                if metadata['pair'] == self.dp.current_whitelist()[0]:
+                    cols = [c for c in dataframe.columns if c.startswith('&-') or c in ['do_predict', 'DI_values', 'enter_long', 'enter_short']]
+                    do_pred_count = int((dataframe.get('do_predict', 0) == 1).sum()) if 'do_predict' in dataframe else 0
+                    enter_l = int(dataframe.get('enter_long', 0).sum()) if 'enter_long' in dataframe else 0
+                    enter_s = int(dataframe.get('enter_short', 0).sum()) if 'enter_short' in dataframe else 0
+                    # Basic stats for targets if present
+                    s_close_stats = None
+                    if '&-s_close' in dataframe:
+                        s_close_stats = (float(dataframe['&-s_close'].min()), float(dataframe['&-s_close'].max()))
+                    s_close_mean_std_present = ('&-s_close_mean' in dataframe.columns, '&-s_close_std' in dataframe.columns)
+                    logger.info("[FreqAIHybridStrategy DEBUG] pair=%s do_predict_count=%s enter_long_sum=%s enter_short_sum=%s cols_sample=%s", metadata['pair'], do_pred_count, enter_l, enter_s, cols[:6])
+                    logger.info("[FreqAIHybridStrategy DEBUG] s_close_present=%s s_close_min_max=%s s_close_mean_std_present=%s", ('&-s_close' in dataframe), s_close_stats, s_close_mean_std_present)
+        except Exception:
+            # Never fail because of debug
+            pass
         
         return dataframe
     
@@ -319,85 +365,93 @@ class FreqAIHybridStrategy(IStrategy):
     
     def populate_entry_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """
-        Entry signal based on FreqAI predictions and regime awareness
-        Supports both LONG and SHORT entries for leveraged futures trading
+        Balanced entry signals using z-score of target vs rolling mean/std,
+        with DI, regime, trend, and volume filters. Entries trigger on threshold crossings
+        to reduce churn. Supports LONG and SHORT for futures.
         """
-        # Dynamic thresholds based on market regime
-        dataframe['regime'] = dataframe.get('%-market_regime', 0)
+        # Use target as prediction proxy for z-score (robust across models)
+        target = dataframe['&-s_close'] if '&-s_close' in dataframe.columns else 0
+        mean = dataframe['&-s_close_mean'] if '&-s_close_mean' in dataframe.columns else 0
+        std = dataframe['&-s_close_std'] if '&-s_close_std' in dataframe.columns else 1
+        z = (target - mean) / (std + 1e-12)
+
+        # Filters
+        do_pred = (dataframe.get('do_predict', 0) == 1)
+        di_ok = dataframe.get('DI_values', 1.0) < self.buy_di_threshold.value  # smaller is closer to training, more reliable
+        vol_regime = dataframe.get('%-volume_regime', 1.0)
+        # Require healthy but not extreme volume (hyperoptable bounds)
+        vol_ok = (vol_regime > float(self.vol_min.value)) & (vol_regime < float(self.vol_max.value))
+        regime = dataframe.get('%-market_regime', 0)
+        # Trend strength gating (EMA-based strength computed in features)
+        ts = dataframe.get('%-trend_strength', 0.0)
+        ts_ok_long = ts > self.trend_threshold.value
+        ts_ok_short = ts < -self.trend_threshold.value
+
+        # Thresholds
+        # Thresholds (hyperoptable)
+        base_thr = float(self.z_base_thr.value)
+        hv_thr = float(self.z_hv_thr.value)
+        long_thr = np.where(regime == 3, hv_thr, base_thr)
+        short_thr = np.where(regime == 3, hv_thr, base_thr)
+
+        # Crossings to reduce flapping
+        long_sig = qtpylib.crossed_above(z, long_thr)
+        short_sig = qtpylib.crossed_below(z, -short_thr)
+
+        gov = get_governance_state()
+        # If governance status is halt -> block new entries
+        allow_entries = (gov.status != 'halt')
+        allow_shorts = (not gov.disable_shorts)
+
+        long_cond = allow_entries & (do_pred & di_ok & vol_ok & ts_ok_long & long_sig)
+        short_baseline = do_pred & di_ok & vol_ok & ts_ok_short & short_sig
+        short_cond = allow_entries & allow_shorts & short_baseline
+
+        dataframe.loc[long_cond, 'enter_long'] = 1
+        dataframe.loc[short_cond, 'enter_short'] = 1
         
-        # Calculate dynamic thresholds based on prediction statistics
-        dataframe['target_roi'] = (
-            dataframe["&-s_close_mean"] + 
-            dataframe["&-s_close_std"] * 1.25
-        )
-        dataframe['target_loss'] = (
-            dataframe["&-s_close_mean"] - 
-            dataframe["&-s_close_std"] * 1.25
-        )
-        
-        # LONG Entry conditions
-        long_conditions = []
-        long_conditions.append(dataframe["&-s_close"] > dataframe['target_roi'])
-        long_conditions.append(dataframe["do_predict"] == 1)
-        long_conditions.append(dataframe["DI_values"] < self.buy_di_threshold.value)
-        long_conditions.append(dataframe['regime'] != 3)  # Avoid high volatility
-        long_conditions.append(dataframe["&-s_volume"] > 0)
-        
-        if long_conditions:
-            dataframe.loc[
-                reduce(lambda x, y: x & y, long_conditions),
-                'enter_long'] = 1
-        
-        # SHORT Entry conditions (inverse logic)
-        short_conditions = []
-        short_conditions.append(dataframe["&-s_close"] < dataframe['target_loss'])
-        short_conditions.append(dataframe["do_predict"] == 1)
-        short_conditions.append(dataframe["DI_values"] < self.sell_di_threshold.value)
-        short_conditions.append(dataframe['regime'] != 3)  # Avoid high volatility
-        short_conditions.append(dataframe["&-s_volume"] > 0)
-        
-        if short_conditions:
-            dataframe.loc[
-                reduce(lambda x, y: x & y, short_conditions),
-                'enter_short'] = 1
-        
+        # Optional entry audit logs (first whitelist pair only)
+        try:
+            if getattr(self, 'entry_audit_logs', False) and metadata.get('pair') and metadata.get('timeframe') == self.timeframe:
+                if metadata['pair'] == self.dp.current_whitelist()[0]:
+                    do_pred_count = int(do_pred.sum()) if hasattr(do_pred, 'sum') else int(do_pred)
+                    di_ok_count = int((do_pred & di_ok).sum()) if hasattr(di_ok, 'sum') else 0
+                    vol_ok_count = int((do_pred & vol_ok).sum()) if hasattr(vol_ok, 'sum') else 0
+                    ts_long_count = int((do_pred & ts_ok_long).sum()) if hasattr(ts_ok_long, 'sum') else 0
+                    ts_short_count = int((do_pred & ts_ok_short).sum()) if hasattr(ts_ok_short, 'sum') else 0
+                    long_sig_count = int(long_sig.sum()) if hasattr(long_sig, 'sum') else 0
+                    short_sig_count = int(short_sig.sum()) if hasattr(short_sig, 'sum') else 0
+                    enter_l = int(dataframe.get('enter_long', 0).sum()) if 'enter_long' in dataframe else 0
+                    enter_s = int(dataframe.get('enter_short', 0).sum()) if 'enter_short' in dataframe else 0
+                    logger.info(
+                        "[EntryAudit] pair=%s do_pred=%s di_ok=%s vol_ok=%s ts_long=%s ts_short=%s long_sig=%s short_sig=%s enter_long=%s enter_short=%s base_thr=%.3f hv_thr=%.3f vol_bounds=(%.2f,%.2f) di_thr=%.3f",
+                        metadata['pair'], do_pred_count, di_ok_count, vol_ok_count, ts_long_count, ts_short_count,
+                        long_sig_count, short_sig_count, enter_l, enter_s,
+                        float(self.z_base_thr.value), float(self.z_hv_thr.value), float(self.vol_min.value), float(self.vol_max.value), float(self.buy_di_threshold.value)
+                    )
+        except Exception:
+            pass
+
         return dataframe
     
     def populate_exit_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """
-        Exit signal based on FreqAI predictions
+        Exit on z-score flips and high-volatility regime deterioration.
         """
-        # Calculate dynamic exit thresholds
-        dataframe['sell_roi'] = (
-            dataframe["&-s_close_mean"] - 
-            dataframe["&-s_close_std"] * 1.25
-        )
-        dataframe['buy_roi'] = (
-            dataframe["&-s_close_mean"] + 
-            dataframe["&-s_close_std"] * 1.25
-        )
-        
-        # LONG exit conditions
-        long_exit_conditions = []
-        long_exit_conditions.append(dataframe["&-s_close"] < dataframe['sell_roi'])
-        long_exit_conditions.append(dataframe["do_predict"] == 1)
-        long_exit_conditions.append(dataframe.get('regime', 0) == 3)
-        
-        if long_exit_conditions:
-            dataframe.loc[
-                reduce(lambda x, y: x | y, long_exit_conditions),
-                'exit_long'] = 1
-        
-        # SHORT exit conditions (inverse of long)
-        short_exit_conditions = []
-        short_exit_conditions.append(dataframe["&-s_close"] > dataframe['buy_roi'])
-        short_exit_conditions.append(dataframe["do_predict"] == 1)
-        short_exit_conditions.append(dataframe.get('regime', 0) == 3)
-        
-        if short_exit_conditions:
-            dataframe.loc[
-                reduce(lambda x, y: x | y, short_exit_conditions),
-                'exit_short'] = 1
+        target = dataframe['&-s_close'] if '&-s_close' in dataframe.columns else 0
+        mean = dataframe['&-s_close_mean'] if '&-s_close_mean' in dataframe.columns else 0
+        std = dataframe['&-s_close_std'] if '&-s_close_std' in dataframe.columns else 1
+        z = (target - mean) / (std + 1e-12)
+
+        do_pred = (dataframe.get('do_predict', 0) == 1)
+        regime = dataframe.get('%-market_regime', 0)
+
+        # Exits: when z crosses back through 0 in the adverse direction or when regime=3
+        exit_long_cond = (do_pred & qtpylib.crossed_below(z, 0.0)) | (regime == 3)
+        exit_short_cond = (do_pred & qtpylib.crossed_above(z, 0.0)) | (regime == 3)
+
+        dataframe.loc[exit_long_cond, 'exit_long'] = 1
+        dataframe.loc[exit_short_cond, 'exit_short'] = 1
         
         return dataframe
     
@@ -412,6 +466,8 @@ class FreqAIHybridStrategy(IStrategy):
         - Moderate: 5x in trending markets
         - Safe: 2x in volatile markets
         """
+        gov = get_governance_state()
+        # Base leverage from regime
         dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
         if len(dataframe) > 0:
             last_candle = dataframe.iloc[-1].squeeze()
@@ -420,16 +476,23 @@ class FreqAIHybridStrategy(IStrategy):
             
             # High volatility regime - use minimum leverage
             if regime == 3 or di_value > 1.5:
-                return 2.0
+                base = 2.0
             # Trending regime with good confidence
             elif regime in [1, 2] and di_value < 0.5:
-                return 5.0
+                base = 5.0
             # Normal regime
             else:
-                return 3.0
-        
-        # Default conservative leverage
-        return 3.0
+                base = 3.0
+        else:
+            base = 3.0
+        # Apply governance risk multiplier and cap by policy/max_leverage
+        lev = float(base) * float(getattr(gov, 'risk_multiplier', 1.0) or 1.0)
+        # Enforce exchange/max caps
+        cap_list = [x for x in [gov.max_leverage, max_leverage] if x is not None]
+        if cap_list:
+            lev = min(lev, *cap_list)
+        # Never below 1.0 for futures leverage
+        return max(1.0, float(lev))
     
     def custom_exit(self, pair: str, trade: Trade, current_time: datetime, 
                    current_rate: float, current_profit: float, **kwargs):
@@ -440,7 +503,7 @@ class FreqAIHybridStrategy(IStrategy):
         last_candle = dataframe.iloc[-1].squeeze()
         
         # Exit if entering high volatility regime with profit
-        if last_candle.get('regime', 0) == 3 and current_profit > 0.01:
+        if last_candle.get('%-market_regime', 0) == 3 and current_profit > 0.01:
             return 'high_volatility_exit'
         
         # Exit if model confidence drops (high DI values)
@@ -448,3 +511,32 @@ class FreqAIHybridStrategy(IStrategy):
             return 'low_confidence_exit'
         
         return None
+
+    def custom_stoploss(self, pair: str, trade: Trade, current_time: datetime,
+                        current_rate: float, current_profit: float, **kwargs) -> float:
+        """
+        ATR-based dynamic stoploss. Returns negative percentage (e.g., -0.025 for -2.5%).
+        Uses atr_14 as volatility proxy and caps within [-5%, -1.5%].
+        """
+        dataframe, _ = self.dp.get_analyzed_dataframe(pair, self.timeframe)
+        if dataframe is None or len(dataframe) == 0:
+            return self.stoploss
+
+        last = dataframe.iloc[-1].squeeze()
+        atr = float(last.get('atr_14', 0))
+        price = float(last.get('close', 0))
+        if price <= 0:
+            return self.stoploss
+
+        atrp = atr / price  # ATR percent of price
+        # Scale: base 1.5x ATR
+        dyn = 1.5 * atrp
+        # Apply governance tightening factor
+        gov = get_governance_state()
+        tighten = float(getattr(gov, 'tighten_stop_factor', 1.0) or 1.0)
+        dyn = dyn * tighten
+        # Clamp within governance policy bounds if provided, else default 1.5%-5%
+        min_stop = 0.015 if getattr(gov, 'min_stop_pct', None) is None else float(gov.min_stop_pct)
+        max_stop = 0.05 if getattr(gov, 'max_stop_pct', None) is None else float(gov.max_stop_pct)
+        dyn = max(min_stop, min(max_stop, dyn))
+        return -float(dyn)

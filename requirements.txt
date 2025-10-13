@@ -4,6 +4,7 @@ python-dotenv==1.0.0
 # Data processing
 pandas==2.1.0
 numpy==1.25.2
+PyYAML==6.0.2
 
 # Web framework (uncomment if needed)
 # fastapi==0.103.0

@@ -91,6 +91,57 @@ jobs:
           2>&1 | tee backtest_output.txt
       continue-on-error: true
         
+    - name: Set up Python for monitoring tools
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install monitoring dependencies
+      run: |
+        pip install pandas numpy PyYAML
+        
+    - name: Extract metrics from backtest
+      id: extract-metrics
+      run: |
+        echo "📊 Extracting metrics from backtest output..."
+        
+        if [ -f backtest_output.txt ]; then
+          python monitoring/extract_metrics.py backtest_output.txt
+        else
+          echo "⚠️ Backtest output not found, skipping metrics extraction"
+        fi
+      continue-on-error: true
+        
+    - name: Run governance decision
+      id: governance
+      run: |
+        echo "🛡️ Running governance decision engine..."
+        
+        if [ -f monitoring/latest_metrics.json ]; then
+          python monitoring/governance_decider.py \
+            --policy config/governance_policy.yaml \
+            --latest monitoring/latest_metrics.json \
+            --history monitoring/metrics_history.csv \
+            --out monitoring/governance_decisions.jsonl
+          
+          # Extract governance status for output
+          if [ -f monitoring/governance_decisions.jsonl ]; then
+            LAST_DECISION=$(tail -n 1 monitoring/governance_decisions.jsonl)
+            STATUS=$(echo $LAST_DECISION | python -c "import sys, json; print(json.load(sys.stdin).get('status', 'unknown'))")
+            RISK_MULT=$(echo $LAST_DECISION | python -c "import sys, json; print(json.load(sys.stdin).get('actions', {}).get('risk_multiplier', '1.0'))")
+            
+            echo "governance_status=${STATUS}" >> $GITHUB_OUTPUT
+            echo "risk_multiplier=${RISK_MULT}" >> $GITHUB_OUTPUT
+            
+            echo "✅ Governance decision: ${STATUS} (risk: ${RISK_MULT}x)"
+          fi
+        else
+          echo "⚠️ Metrics not available, skipping governance decision"
+          echo "governance_status=unavailable" >> $GITHUB_OUTPUT
+        fi
+      continue-on-error: true
+    
     - name: Parse backtest results
       id: parse-results
       run: |
@@ -115,6 +166,9 @@ jobs:
         path: |
           backtest_output.txt
           user_data/backtest_results/
+          monitoring/latest_metrics.json
+          monitoring/metrics_history.csv
+          monitoring/governance_decisions.jsonl
         retention-days: 30
         
     - name: Create performance badge
@@ -149,7 +203,25 @@ jobs:
         echo "- **Win Rate:** ${{ steps.parse-results.outputs.win_rate || 'N/A' }}%" >> $GITHUB_STEP_SUMMARY
         echo "- **Total Profit:** ${{ steps.parse-results.outputs.profit || 'N/A' }}%" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "📥 Full results available in artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "### 🛡️ Governance Status" >> $GITHUB_STEP_SUMMARY
+        
+        GOV_STATUS="${{ steps.governance.outputs.governance_status || 'unavailable' }}"
+        RISK_MULT="${{ steps.governance.outputs.risk_multiplier || '1.0' }}"
+        
+        if [ "$GOV_STATUS" == "halt" ]; then
+          echo "- **Status:** 🛑 **HALT** - New entries blocked" >> $GITHUB_STEP_SUMMARY
+        elif [ "$GOV_STATUS" == "degrade" ]; then
+          echo "- **Status:** ⚠️ **DEGRADE** - Risk reduced to ${RISK_MULT}x" >> $GITHUB_STEP_SUMMARY
+        elif [ "$GOV_STATUS" == "warn" ]; then
+          echo "- **Status:** ⚠️ **WARN** - Risk adjusted to ${RISK_MULT}x" >> $GITHUB_STEP_SUMMARY
+        elif [ "$GOV_STATUS" == "none" ] || [ "$GOV_STATUS" == "resume" ]; then
+          echo "- **Status:** ✅ **NORMAL** - All systems operational" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "- **Status:** ℹ️ Governance check unavailable" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📥 Full results and governance decisions available in artifacts" >> $GITHUB_STEP_SUMMARY
         
     - name: Comment PR with results
       if: github.event_name == 'pull_request'
@@ -159,6 +231,25 @@ jobs:
           const totalTrades = '${{ steps.parse-results.outputs.total_trades }}';
           const winRate = '${{ steps.parse-results.outputs.win_rate }}';
           const profit = '${{ steps.parse-results.outputs.profit }}';
+          const govStatus = '${{ steps.governance.outputs.governance_status }}';
+          const riskMult = '${{ steps.governance.outputs.risk_multiplier }}';
+          
+          let govEmoji = 'ℹ️';
+          let govMessage = 'Governance check unavailable';
+          
+          if (govStatus === 'halt') {
+            govEmoji = '🛑';
+            govMessage = '**HALT** - New entries blocked due to risk thresholds';
+          } else if (govStatus === 'degrade') {
+            govEmoji = '⚠️';
+            govMessage = `**DEGRADE** - Risk reduced to ${riskMult}x, shorts disabled`;
+          } else if (govStatus === 'warn') {
+            govEmoji = '⚠️';
+            govMessage = `**WARN** - Risk adjusted to ${riskMult}x`;
+          } else if (govStatus === 'none' || govStatus === 'resume') {
+            govEmoji = '✅';
+            govMessage = '**NORMAL** - All systems operational';
+          }
           
           const body = `## 🤖 Automated Backtest Results
           
@@ -167,12 +258,15 @@ jobs:
           - **Win Rate:** ${winRate}%
           - **Total Profit:** ${profit}%
           
+          ### ${govEmoji} Governance Status
+          ${govMessage}
+          
           ### Configuration
           - **Strategy:** FreqAIHybridStrategy
           - **Timerange:** ${{ github.event.inputs.timerange || '20241001-20250101' }}
           - **Commit:** \`${{ github.sha }}\`
           
-          📥 Download full results from the workflow artifacts.
+          📥 Download full results and governance decisions from the workflow artifacts.
           `;
           
           github.rest.issues.createComment({
