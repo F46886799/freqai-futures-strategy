@@ -140,12 +140,12 @@ notebook["cells"].append({
     "outputs": []
 })
 
-# Cell 7: Run backtest
+# Cell 7: Run backtest (OFFLINE MODE)
 notebook["cells"].append({
     "cell_type": "code",
     "metadata": {},
     "source": [
-        "# Run backtest\n",
+        "# Run backtest (Offline mode - no Binance API)\n",
         "print(\"🚀 Starting backtest...\\n\")\n",
         "print(\"=\"*60)\n",
         "\n",
@@ -157,13 +157,16 @@ notebook["cells"].append({
         "print(f\"Timerange: {TIMERANGE}\")\n",
         "print(f\"Pairs: {PAIRS}\")\n",
         "print(\"=\"*60)\n",
+        "print(\"\\n⚠️  Using OFFLINE mode (Binance blocked in US)\")\n",
+        "print(\"✅ Data loaded from Drive\\n\")\n",
         "\n",
         "!freqtrade backtesting \\\n",
         "    --strategy {STRATEGY} \\\n",
-        "    --config config/config.json \\\n",
+        "    --config config/config_offline.json \\\n",
         "    --freqaimodel LightGBMRegressorMultiTarget \\\n",
         "    --timerange {TIMERANGE} \\\n",
-        "    --export trades\n",
+        "    --export trades \\\n",
+        "    --datadir user_data/data/binance\n",
         "\n",
         "print(\"\\n✅ Backtest done!\")"
     ],
