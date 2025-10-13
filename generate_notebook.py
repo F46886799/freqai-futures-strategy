@@ -1,25 +1,36 @@
-{
-  "nbformat": 4,
-  "nbformat_minor": 0,
-  "metadata": {
-    "colab": {
-      "provenance": [],
-      "gpuType": "T4"
+#!/usr/bin/env python3
+"""
+Generate Colab notebook with PROPER JSON formatting
+"""
+
+import json
+
+# Define notebook structure
+notebook = {
+    "nbformat": 4,
+    "nbformat_minor": 0,
+    "metadata": {
+        "colab": {
+            "provenance": [],
+            "gpuType": "T4"
+        },
+        "kernelspec": {
+            "name": "python3",
+            "display_name": "Python 3"
+        },
+        "language_info": {
+            "name": "python"
+        },
+        "accelerator": "GPU"
     },
-    "kernelspec": {
-      "name": "python3",
-      "display_name": "Python 3"
-    },
-    "language_info": {
-      "name": "python"
-    },
-    "accelerator": "GPU"
-  },
-  "cells": [
-    {
-      "cell_type": "markdown",
-      "metadata": {},
-      "source": [
+    "cells": []
+}
+
+# Cell 1: Markdown intro
+notebook["cells"].append({
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
         "# 🚀 FreqAI Hybrid Strategy - GPU Backtest\n",
         "\n",
         "**Simple Git-based workflow - No SSH, No tunnels!**\n",
@@ -36,12 +47,14 @@
         "## ⏱️ Time:\n",
         "- First run: ~5 min (install)\n",
         "- Backtest: ~5-15 min"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
+    ]
+})
+
+# Cell 2: Check GPU
+notebook["cells"].append({
+    "cell_type": "code",
+    "metadata": {},
+    "source": [
         "# Check GPU\n",
         "!nvidia-smi --query-gpu=name,memory.total --format=csv\n",
         "\n",
@@ -49,14 +62,16 @@
         "print(f\"\\n✅ GPU: {torch.cuda.is_available()}\")\n",
         "if torch.cuda.is_available():\n",
         "    print(f\"Device: {torch.cuda.get_device_name(0)}\")"
-      ],
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
+    ],
+    "execution_count": None,
+    "outputs": []
+})
+
+# Cell 3: Clone repo
+notebook["cells"].append({
+    "cell_type": "code",
+    "metadata": {},
+    "source": [
         "# Clone repository\n",
         "!rm -rf freqai-futures-strategy\n",
         "print(\"📦 Cloning...\")\n",
@@ -64,28 +79,32 @@
         "%cd freqai-futures-strategy\n",
         "print(\"\\n✅ Done!\")\n",
         "!ls -lh"
-      ],
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
+    ],
+    "execution_count": None,
+    "outputs": []
+})
+
+# Cell 4: Install dependencies
+notebook["cells"].append({
+    "cell_type": "code",
+    "metadata": {},
+    "source": [
         "# Install dependencies\n",
         "print(\"📦 Installing... (2-3 min)\\n\")\n",
         "!pip install -q ta-lib-binary\n",
         "!pip install -q 'freqtrade[freqai]'\n",
         "print(\"\\n✅ Installed!\")\n",
         "!freqtrade --version"
-      ],
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
+    ],
+    "execution_count": None,
+    "outputs": []
+})
+
+# Cell 5: Mount Drive
+notebook["cells"].append({
+    "cell_type": "code",
+    "metadata": {},
+    "source": [
         "# Mount Google Drive\n",
         "from google.colab import drive\n",
         "drive.mount('/content/drive')\n",
@@ -93,14 +112,16 @@
         "results_dir = '/content/drive/MyDrive/FreqAI_Results'\n",
         "!mkdir -p \"{results_dir}\"\n",
         "print(f\"\\n✅ Results → {results_dir}\")"
-      ],
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
+    ],
+    "execution_count": None,
+    "outputs": []
+})
+
+# Cell 6: Optional data
+notebook["cells"].append({
+    "cell_type": "code",
+    "metadata": {},
+    "source": [
         "# Optional: Load data from Drive\n",
         "import os, zipfile\n",
         "\n",
@@ -114,14 +135,16 @@
         "    print(\"✅ Done!\")\n",
         "else:\n",
         "    print(\"ℹ️  No data. Will download during backtest.\")"
-      ],
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
+    ],
+    "execution_count": None,
+    "outputs": []
+})
+
+# Cell 7: Run backtest
+notebook["cells"].append({
+    "cell_type": "code",
+    "metadata": {},
+    "source": [
         "# Run backtest\n",
         "print(\"🚀 Starting backtest...\\n\")\n",
         "print(\"=\"*60)\n",
@@ -143,14 +166,16 @@
         "    --export trades\n",
         "\n",
         "print(\"\\n✅ Backtest done!\")"
-      ],
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "code",
-      "metadata": {},
-      "source": [
+    ],
+    "execution_count": None,
+    "outputs": []
+})
+
+# Cell 8: Save results
+notebook["cells"].append({
+    "cell_type": "code",
+    "metadata": {},
+    "source": [
         "# Save to Drive\n",
         "from datetime import datetime\n",
         "import os\n",
@@ -167,14 +192,16 @@
         "    !ls -lh \"{run_folder}\"\n",
         "else:\n",
         "    print(\"⚠️  No results found!\")"
-      ],
-      "execution_count": null,
-      "outputs": []
-    },
-    {
-      "cell_type": "markdown",
-      "metadata": {},
-      "source": [
+    ],
+    "execution_count": None,
+    "outputs": []
+})
+
+# Cell 9: Markdown outro
+notebook["cells"].append({
+    "cell_type": "markdown",
+    "metadata": {},
+    "source": [
         "---\n",
         "\n",
         "## 🎉 Done!\n",
@@ -194,7 +221,16 @@
         "- Upload data to Drive to speed up\n",
         "\n",
         "---"
-      ]
-    }
-  ]
-}
+    ]
+})
+
+# Write with proper formatting
+with open('Colab_GPU_Backtest.ipynb', 'w', encoding='utf-8') as f:
+    json.dump(notebook, f, indent=2, ensure_ascii=False)
+
+print("✅ Notebook created successfully!")
+print("\nStructure:")
+print("  - 1 intro cell")
+print("  - 7 code cells")
+print("  - 1 outro cell")
+print("\nJSON is valid and properly formatted!")
