@@ -1,5 +1,7 @@
 # FreqAI Futures Strategy
 
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/aminak58/freqai-futures-strategy/blob/master/Colab_GPU_Backtest.ipynb)
+
 Professional machine learning-based trading strategy for Binance USDT-M Perpetual Futures using FreqAI + LightGBM.
 
 ## Features
