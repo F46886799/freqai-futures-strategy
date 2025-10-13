@@ -19,12 +19,16 @@ def get_story_points(issue):
         if label.name.startswith("points-"):
             return int(label.name.split("-")[1])
     
-    # Try to extract from title [US X.Y] or body
-    if "Story Points:" in issue.body:
+    # Try to extract from body
+    if issue.body and "Story Points:" in issue.body:
         for line in issue.body.split("\n"):
-            if "Story Points:" in line:
+            if "Story Points:" in line and "**" in line:
                 try:
-                    return int(line.split(":")[-1].strip())
+                    # Extract from **Story Points:** X format
+                    parts = line.split(":")
+                    if len(parts) >= 2:
+                        points_str = parts[-1].strip().replace("*", "").strip()
+                        return int(points_str)
                 except:
                     pass
     
@@ -87,9 +91,17 @@ def get_sprint_burndown(repo_name: str, token: str, sprint_number: int):
     print()
     print("=" * 60)
     print(f"📈 Total Story Points: {total_points}")
-    print(f"✅ Completed: {completed_points} ({completed_points/total_points*100:.1f}%)")
-    print(f"🔄 In Progress: {in_progress_points} ({in_progress_points/total_points*100:.1f}%)")
-    print(f"⏳ Remaining: {remaining_points} ({remaining_points/total_points*100:.1f}%)")
+    
+    if total_points > 0:
+        print(f"✅ Completed: {completed_points} ({completed_points/total_points*100:.1f}%)")
+        print(f"🔄 In Progress: {in_progress_points} ({in_progress_points/total_points*100:.1f}%)")
+        print(f"⏳ Remaining: {remaining_points} ({remaining_points/total_points*100:.1f}%)")
+    else:
+        print(f"✅ Completed: {completed_points}")
+        print(f"🔄 In Progress: {in_progress_points}")
+        print(f"⏳ Remaining: {remaining_points}")
+        print("\n⚠️  Note: Story points not found in issue labels.")
+        print("   Story points are extracted from issue body 'Story Points: X'.")
 
     if milestone.due_on:
         days_remaining = (milestone.due_on.date() - datetime.now().date()).days
