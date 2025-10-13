@@ -140,12 +140,76 @@ notebook["cells"].append({
     "outputs": []
 })
 
-# Cell 7: Run backtest (OFFLINE MODE)
+# Cell 7: CRITICAL - Setup proxy to bypass Binance geo-blocking
 notebook["cells"].append({
     "cell_type": "code",
     "metadata": {},
     "source": [
-        "# Run backtest (Offline mode - no Binance API)\n",
+        "# 🔥 CRITICAL: Setup proxy to bypass Binance geo-restriction\n",
+        "import os\n",
+        "import requests\n",
+        "\n",
+        "print(\"🌐 Setting up proxy to bypass Binance blocking...\\n\")\n",
+        "\n",
+        "# Free proxy list (rotate if one fails)\n",
+        "PROXIES = [\n",
+        "    \"http://103.152.112.162:80\",\n",
+        "    \"http://20.111.54.16:8123\",\n",
+        "    \"http://157.230.241.133:38331\",\n",
+        "]\n",
+        "\n",
+        "working_proxy = None\n",
+        "\n",
+        "for proxy in PROXIES:\n",
+        "    try:\n",
+        "        print(f\"Testing: {proxy}\")\n",
+        "        response = requests.get(\n",
+        "            \"https://api.binance.com/api/v3/ping\",\n",
+        "            proxies={\"http\": proxy, \"https\": proxy},\n",
+        "            timeout=5\n",
+        "        )\n",
+        "        if response.status_code == 200:\n",
+        "            working_proxy = proxy\n",
+        "            print(f\"✅ Working proxy: {proxy}\\n\")\n",
+        "            break\n",
+        "    except Exception as e:\n",
+        "        print(f\"❌ Failed: {str(e)[:50]}\")\n",
+        "\n",
+        "if working_proxy:\n",
+        "    # Set environment variables\n",
+        "    os.environ['HTTP_PROXY'] = working_proxy\n",
+        "    os.environ['HTTPS_PROXY'] = working_proxy\n",
+        "    os.environ['http_proxy'] = working_proxy\n",
+        "    os.environ['https_proxy'] = working_proxy\n",
+        "    \n",
+        "    print(\"🎯 Proxy configured!\")\n",
+        "    print(f\"HTTP_PROXY = {working_proxy}\")\n",
+        "    print(f\"HTTPS_PROXY = {working_proxy}\")\n",
+        "    \n",
+        "    # Verify Binance access\n",
+        "    try:\n",
+        "        test = requests.get(\"https://api.binance.com/api/v3/exchangeInfo\", timeout=10)\n",
+        "        if test.status_code == 200:\n",
+        "            print(\"\\n✅ Binance API accessible!\")\n",
+        "        else:\n",
+        "            print(f\"\\n⚠️  Status: {test.status_code}\")\n",
+        "    except Exception as e:\n",
+        "        print(f\"\\n⚠️  Test failed: {e}\")\n",
+        "else:\n",
+        "    print(\"\\n❌ All proxies failed!\")\n",
+        "    print(\"⚠️  Backtest may fail due to Binance geo-blocking\")\n",
+        "    print(\"💡 Try running from a different region or use VPN\")"
+    ],
+    "execution_count": None,
+    "outputs": []
+})
+
+# Cell 8: Run backtest (with proxy)
+notebook["cells"].append({
+    "cell_type": "code",
+    "metadata": {},
+    "source": [
+        "# Run backtest (proxy should bypass Binance blocking)\n",
         "print(\"🚀 Starting backtest...\\n\")\n",
         "print(\"=\"*60)\n",
         "\n",
@@ -157,12 +221,18 @@ notebook["cells"].append({
         "print(f\"Timerange: {TIMERANGE}\")\n",
         "print(f\"Pairs: {PAIRS}\")\n",
         "print(\"=\"*60)\n",
-        "print(\"\\n⚠️  Using OFFLINE mode (Binance blocked in US)\")\n",
-        "print(\"✅ Data loaded from Drive\\n\")\n",
+        "\n",
+        "import os\n",
+        "if 'HTTP_PROXY' in os.environ:\n",
+        "    print(f\"\\n✅ Using proxy: {os.environ['HTTP_PROXY']}\")\n",
+        "else:\n",
+        "    print(\"\\n⚠️  No proxy set - may fail!\")\n",
+        "\n",
+        "print(\"\\n\")\n",
         "\n",
         "!freqtrade backtesting \\\n",
         "    --strategy {STRATEGY} \\\n",
-        "    --config config/config_offline.json \\\n",
+        "    --config config/config.json \\\n",
         "    --freqaimodel LightGBMRegressorMultiTarget \\\n",
         "    --timerange {TIMERANGE} \\\n",
         "    --export trades \\\n",
@@ -174,7 +244,7 @@ notebook["cells"].append({
     "outputs": []
 })
 
-# Cell 8: Save results
+# Cell 9: Save results
 notebook["cells"].append({
     "cell_type": "code",
     "metadata": {},
@@ -234,6 +304,6 @@ with open('Colab_GPU_Backtest.ipynb', 'w', encoding='utf-8') as f:
 print("✅ Notebook created successfully!")
 print("\nStructure:")
 print("  - 1 intro cell")
-print("  - 7 code cells")
+print("  - 8 code cells (including proxy setup)")
 print("  - 1 outro cell")
 print("\nJSON is valid and properly formatted!")
