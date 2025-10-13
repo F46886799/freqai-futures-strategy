@@ -18,6 +18,9 @@ numpy>=1.24.0
 matplotlib>=3.7.0
 seaborn>=0.12.0
 
+# GitHub API
+PyGithub>=2.1.1
+
 # Freqtrade dependencies (should match main requirements)
 # These are included in the Freqtrade Docker image
 # but needed for local testing

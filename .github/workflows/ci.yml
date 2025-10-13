@@ -1,0 +1,146 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: ['master', 'sprint-*', 'feature/*']
+  pull_request:
+    branches: ['master']
+
+jobs:
+  # Job 1: Linting
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      
+      - name: Lint with flake8
+        run: |
+          flake8 src/ tests/ diagnostics/ monitoring/ --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 src/ tests/ diagnostics/ monitoring/ --count --max-complexity=10 --max-line-length=120 --statistics
+      
+      - name: Format check with black
+        run: black --check src/ tests/ diagnostics/ monitoring/
+      
+      - name: Type check with mypy
+        run: mypy src/ --ignore-missing-imports
+  
+  # Job 2: Security Scan
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install bandit
+      
+      - name: Security scan with bandit
+        run: bandit -r src/ diagnostics/ monitoring/ -ll
+  
+  # Job 3: Test Suite
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      
+      - name: Run tests with pytest
+        run: |
+          pytest tests/ -v --cov=src --cov=diagnostics --cov=monitoring --cov-report=xml --cov-report=html --cov-report=term
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+  
+  # Job 4: Coverage Check (Enforcement)
+  coverage-check:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      
+      - name: Check coverage threshold
+        run: |
+          # Run coverage
+          COVERAGE_OUTPUT=$(pytest tests/ --cov=src --cov=diagnostics --cov=monitoring --cov-report=term | grep TOTAL)
+          CURRENT_COVERAGE=$(echo "$COVERAGE_OUTPUT" | awk '{print $4}' | sed 's/%//')
+          
+          # Determine target based on branch
+          if [[ "$GITHUB_REF" == *"sprint-2"* ]] || [[ "$GITHUB_BASE_REF" == "master" ]]; then
+            TARGET_COVERAGE=60
+          else
+            TARGET_COVERAGE=45  # Current baseline
+          fi
+          
+          echo "Current coverage: ${CURRENT_COVERAGE}%"
+          echo "Target coverage: ${TARGET_COVERAGE}%"
+          
+          # Compare
+          if (( $(echo "$CURRENT_COVERAGE < $TARGET_COVERAGE" | bc -l) )); then
+            echo "❌ Coverage ${CURRENT_COVERAGE}% is below target ${TARGET_COVERAGE}%"
+            exit 1
+          else
+            echo "✅ Coverage ${CURRENT_COVERAGE}% meets target ${TARGET_COVERAGE}%"
+          fi
+  
+  # Job 5: Build validation
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, security, test]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Validate imports
+        run: |
+          python -c "from src.main import main; print('✅ Imports valid')" || echo "⚠️ src.main not found, skipping"
+          python -c "from src.evaluation_protocol import EvaluationProtocol; print('✅ EvaluationProtocol valid')"
+          python -c "from diagnostics.signal_audit import SignalAuditLogger; print('✅ SignalAuditLogger valid')"
