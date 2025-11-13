@@ -63,7 +63,7 @@ jobs:
           --exchange binance \
           --pairs BTC/USDT:USDT ETH/USDT:USDT \
           --timeframes 5m 15m 1h \
-          --days 90 \
+          --days 720 \
           --trading-mode futures \
           --data-format-ohlcv feather
       continue-on-error: true
