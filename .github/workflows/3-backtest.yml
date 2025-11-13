@@ -13,7 +13,7 @@ on:
       timerange:
         description: 'Timerange for backtest (e.g., 20240101-20241231)'
         required: false
-        default: '20241001-20250101'
+        default: '20250101-20250331'
       strategy:
         description: 'Strategy to test'
         required: false
