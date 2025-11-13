@@ -96,7 +96,7 @@ jobs:
       with:
         python-version: '3.11.5'
         cache: 'pip'
-        update-environment: false
+        update-environment: true
         
     - name: Install monitoring dependencies
       run: |
