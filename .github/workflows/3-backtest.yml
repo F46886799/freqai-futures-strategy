@@ -22,7 +22,7 @@ on:
 jobs:
   backtest:
     name: Run Backtest
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 120
     
     steps:
